@@ -1,0 +1,206 @@
+/* App shell and page-level layout. Reusable pieces live in ui/primitives. */
+
+.app {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding:
+    calc(var(--safe-top) + var(--space-5))
+    calc(var(--safe-right) + var(--space-4))
+    calc(var(--safe-bottom) + var(--space-7))
+    calc(var(--safe-left) + var(--space-4));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+@media (display-mode: standalone) {
+  .app {
+    padding-top: calc(var(--safe-top) + var(--space-4));
+  }
+}
+
+/* Hero */
+.hero {
+  background: var(--color-bg);
+  border: var(--border-w) solid var(--color-fg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-hard);
+}
+
+.hero__day {
+  font-family: var(--font-display);
+  font-size: var(--fs-hero);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.hero__focus {
+  margin-top: var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-snug);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.hero__meta {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-small);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
+/* Day strip */
+.day-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+/* Confirm bar */
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.confirm__question {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-snug);
+  text-transform: uppercase;
+}
+
+.confirm__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+/* Sections */
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Mobility / stretch item */
+.item {
+  border-left: var(--border-w-thick) solid var(--color-fg);
+  padding-left: var(--space-3);
+}
+
+.item__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.item__name {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  text-transform: uppercase;
+}
+
+.item__reps {
+  font-weight: 700;
+  color: var(--color-accent-2);
+  letter-spacing: var(--tracking-wide);
+}
+
+.item__desc {
+  margin-top: var(--space-2);
+}
+
+.item__notes {
+  margin-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--fs-small);
+  color: var(--color-fg);
+}
+
+.item__notes li {
+  padding-left: var(--space-3);
+  border-left: var(--border-w-thin) solid var(--color-accent);
+}
+
+/* Exercise */
+.exercise {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.exercise__letter {
+  display: grid;
+  place-items: center;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0 var(--space-2);
+  background: var(--color-bg-inverse);
+  color: var(--color-fg-inverse);
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  line-height: 1;
+}
+
+.exercise__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Superset */
+.superset {
+  border: var(--border-w-thin) solid var(--color-fg);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.superset__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.superset__divider {
+  height: var(--border-w-thin);
+  background: var(--stripe-hazard);
+}
+
+/* Weekend */
+.weekend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.weekend__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  text-transform: uppercase;
+  line-height: var(--lh-snug);
+}
+
+.weekend__stripe {
+  height: 12px;
+  background: var(--stripe-hazard-2);
+}

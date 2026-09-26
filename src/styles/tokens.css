@@ -1,0 +1,66 @@
+/* Design tokens — the only place raw values live. Derived from desing.md (Dark Neo-Brutalist). */
+:root {
+  /* Color */
+  --color-black: #000000;
+  --color-bg: #0a0a0a;
+  --color-fg: #ffffff;
+  --color-bg-inverse: #ffffff;
+  --color-fg-inverse: #000000;
+  --color-accent: #ff5500;   /* industrial orange: primary CTAs, energy */
+  --color-accent-2: #c4f000; /* acid green: success, active, highlights */
+  --color-grid: color-mix(in srgb, var(--color-fg) 20%, transparent);
+
+  /* Borders and geometry */
+  --border-w-thin: 2px;
+  --border-w: 3px;
+  --border-w-thick: 4px;
+  --radius: 0;
+
+  /* Hard shadows (100% opacity, sharp) */
+  --shadow-offset: 6px;
+  --shadow-hard: var(--shadow-offset) var(--shadow-offset) 0 0 var(--color-fg);
+  --shadow-hard-accent: var(--shadow-offset) var(--shadow-offset) 0 0 var(--color-accent);
+  --shadow-hard-accent-2: var(--shadow-offset) var(--shadow-offset) 0 0 var(--color-accent-2);
+
+  /* Typography */
+  --font-display: 'Archivo Black', 'Arial Black', Impact, system-ui, sans-serif;
+  --font-body: 'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --fs-hero: clamp(2.75rem, 13vw, 5.5rem);
+  --fs-h1: 1.75rem;
+  --fs-h2: 1.25rem;
+  --fs-h3: 1rem;
+  --fs-body: 0.95rem;
+  --fs-small: 0.75rem;
+  --fs-micro: 0.65rem;
+
+  --lh-tight: 0.9;
+  --lh-snug: 1.1;
+  --lh-body: 1.45;
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.06em;
+  --tracking-wider: 0.12em;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 40px;
+  --space-7: 64px;
+
+  /* Motifs */
+  --stripe-hazard: repeating-linear-gradient(45deg, var(--color-accent) 0 8px, var(--color-black) 8px 16px);
+  --stripe-hazard-2: repeating-linear-gradient(45deg, var(--color-accent-2) 0 8px, var(--color-black) 8px 16px);
+  --dot-grid: radial-gradient(var(--color-grid) 1px, transparent 1.5px);
+  --dot-grid-size: 16px;
+
+  /* Layout */
+  --content-max: 560px;
+  --tap-min: 44px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}

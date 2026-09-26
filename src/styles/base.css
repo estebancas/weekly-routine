@@ -1,0 +1,70 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-black);
+  -webkit-text-size-adjust: 100%;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background-color: var(--color-bg);
+  background-image: var(--dot-grid);
+  background-size: var(--dot-grid-size) var(--dot-grid-size);
+  color: var(--color-fg);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+h1, h2, h3, h4, p, ul, ol, figure {
+  margin: 0;
+}
+
+ul, ol {
+  padding: 0;
+  list-style: none;
+}
+
+button, input {
+  font: inherit;
+  color: inherit;
+  border-radius: var(--radius);
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: var(--border-w) solid var(--color-accent-2);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-accent-2);
+  color: var(--color-fg-inverse);
+}
+
+.u-display {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

@@ -1,0 +1,507 @@
+{
+  "weekly_routine": [
+    {
+      "day": "Monday",
+      "focus": "Legs + Traps",
+      "reference_file": "1 monday - legs + traps.pdf",
+      "mobility": [
+        {
+          "name": "Rotaciones Articulares Controladas (CARs) de Cadera",
+          "description": "Revertir acortamiento de flexores tras largos periodos en el escritorio",
+          "sets_reps": "5 minutos",
+          "extra": []
+        },
+        {
+          "name": "Estiramiento Dinámico del Psoas (Kneeling Hip Flexor Stretch)",
+          "description": "Elongación activa para facilitar la extensión de cadera",
+          "sets_reps": "2x15 segundos por lado",
+          "extra": []
+        },
+        {
+          "name": "Monster Walks con Banda",
+          "description": "Activar glúteo medio y estabilizar la pelvis",
+          "sets_reps": "2x15 pasos",
+          "extra": [
+            "Previene el valgo de rodilla bajo carga"
+          ]
+        }
+      ],
+      "stretch": [
+        {
+          "name": "Couch Stretch (Estiramiento de sofá)",
+          "description": "Libera la tensión del cuádriceps y el psoas para reducir tracción directa sobre la rótula izquierda",
+          "sets_reps": "1x60-120 segundos por lado",
+          "extra": [
+            "Enfócate en exhalaciones largas para inducir un estado parasimpático"
+          ]
+        },
+        {
+          "name": "Estiramiento de Trapecio con Inclinación Cervical",
+          "description": "Relaja la zona del cuello hiperactiva por la postura frente al monitor",
+          "sets_reps": "1x60 segundos por lado",
+          "extra": [
+            "Usa el peso suave de tu mano, no jales con fuerza"
+          ]
+        }
+      ],
+      "exercises": [
+        {
+          "group": "A",
+          "name": "Barbell Hip Thrust",
+          "sets_reps": "3x12",
+          "extra": [
+            "Integrar 5 minutos de rotaciones articulares controladas (CARs) de cadera y estiramientos dinámicos del psoas antes de este ejercicio",
+            "en la ultima rep sostiene max cantidad de tiempo en isometrico"
+          ]
+        },
+        {
+          "group": "B",
+          "name": "Walking Lunges",
+          "sets_reps": "3x20 reps",
+          "extra": [
+            "pasos largos y profundos"
+          ]
+        },
+        {
+          "group": "C",
+          "name": "Box Step Up",
+          "sets_reps": "3x10 por lado",
+          "extra": [
+            "trabaja de lado de la caja con extensiones completas"
+          ]
+        },
+        {
+          "group": "D1",
+          "name": "Spanish Squats (Isométrico)",
+          "sets_reps": "3x 45 segundos",
+          "extra": [
+            "Utilizar el peso corporal para generar analgesia y remodelar el tejido conectivo sin fricción articular"
+          ]
+        },
+        {
+          "group": "D2",
+          "name": "Frog Pump",
+          "sets_reps": "4x15",
+          "extra": [
+            "mismo peso de los jumping squats en la cadera"
+          ]
+        },
+        {
+          "group": "E",
+          "name": "Ez Bar upright row",
+          "sets_reps": "3x15",
+          "extra": []
+        },
+        {
+          "group": "F1",
+          "name": "Cable Face Pull",
+          "sets_reps": "3x10",
+          "extra": [
+            "Descanso máximo de 45-60 segundos entre superseries F1 y F2"
+          ]
+        },
+        {
+          "group": "F2",
+          "name": "Dumbbell Shrug",
+          "sets_reps": "3x10",
+          "extra": []
+        }
+      ]
+    },
+    {
+      "day": "Tuesday",
+      "focus": "Chest + Back",
+      "reference_file": "2 tuesday - chest + back.pdf",
+      "mobility": [
+        {
+          "name": "Extensiones Torácicas en Foam Roller",
+          "description": "Movilizar la columna torácica",
+          "sets_reps": "2 minutos",
+          "extra": [
+            "Contrarresta la postura encorvada"
+          ]
+        },
+        {
+          "name": "Band Pull-Aparts",
+          "description": "Estabilizar escápulas",
+          "sets_reps": "2x20 repeticiones",
+          "extra": [
+            "Activa retractores antes del empuje"
+          ]
+        },
+        {
+          "name": "Rotaciones Torácicas 'Thread the Needle'",
+          "description": "Optimizar mecánica de empuje y tracción",
+          "sets_reps": "8 repeticiones por lado",
+          "extra": []
+        }
+      ],
+      "stretch": [
+        {
+          "name": "Estiramiento de Pectoral en Marco de Puerta",
+          "description": "Abre la caja torácica y elonga tejidos acortados por los empujes",
+          "sets_reps": "1x60-120 segundos por lado",
+          "extra": [
+            "Mantén el codo alineado a la altura del hombro"
+          ]
+        },
+        {
+          "name": "Postura del Niño (Child's Pose) con Alcance Lateral",
+          "description": "Descomprime la columna y estira los dorsales",
+          "sets_reps": "1x60-120 segundos",
+          "extra": [
+            "Respira hacia la zona baja de la espalda"
+          ]
+        }
+      ],
+      "exercises": [
+        {
+          "group": "A1",
+          "name": "Decline Push Ups",
+          "sets_reps": "3x8-12",
+          "extra": []
+        },
+        {
+          "group": "A2",
+          "name": "Bench Press",
+          "sets_reps": "4x12",
+          "extra": [
+            "pausa 1 seg en el pecho"
+          ]
+        },
+        {
+          "group": "B",
+          "name": "Chest Fly Machine",
+          "sets_reps": "3x12",
+          "extra": [
+            "entre sets 45seg plank sobre manos",
+            "Mantener tensión abdominal durante la plancha para elevar el gasto calórico"
+          ]
+        },
+        {
+          "group": "C",
+          "name": "Dumbbell Incline Bench Press",
+          "sets_reps": "3 set al fallo max 15 reps",
+          "extra": []
+        },
+        {
+          "group": "D1",
+          "name": "Bent Over Pulldown",
+          "sets_reps": "3x15",
+          "extra": []
+        },
+        {
+          "group": "D2",
+          "name": "Banded Chin Ups",
+          "sets_reps": "4x8",
+          "extra": [
+            "puede usar maquina o liga"
+          ]
+        },
+        {
+          "group": "E1",
+          "name": "Seated Row",
+          "sets_reps": "3x10",
+          "extra": []
+        },
+        {
+          "group": "E2",
+          "name": "Lat Pull Down",
+          "sets_reps": "3x10",
+          "extra": []
+        },
+        {
+          "group": "F",
+          "name": "Bent Over Dual KB Row",
+          "sets_reps": "3 sets al fallo max 12 reps",
+          "extra": []
+        }
+      ]
+    },
+    {
+      "day": "Wednesday",
+      "focus": "Shoulder + Calves",
+      "reference_file": "3 wednesday - shoulder + calves.pdf",
+      "mobility": [
+        {
+          "name": "Movilizaciones de Tobillo a la Pared (Knee-to-Wall)",
+          "description": "Optimizar dorsiflexión",
+          "sets_reps": "2x10 repeticiones lentas por lado",
+          "extra": [
+            "Prepara el tejido para cargas de pantorrilla y ciclismo"
+          ]
+        },
+        {
+          "name": "CARs de Hombro",
+          "description": "Lubricación de cápsula articular",
+          "sets_reps": "2 minutos por brazo",
+          "extra": []
+        },
+        {
+          "name": "Y-W-T Holds en el piso",
+          "description": "Activar trapecios inferiores",
+          "sets_reps": "10 repeticiones de 3 segundos",
+          "extra": []
+        }
+      ],
+      "stretch": [
+        {
+          "name": "Perro Boca Abajo (Downward Dog) con Pedaleo",
+          "description": "Elonga profundamente gastrocnemios y sóleos; restaura dorsiflexión",
+          "sets_reps": "1x60-120 segundos totales",
+          "extra": [
+            "Alterna suavemente la presión en los talones"
+          ]
+        },
+        {
+          "name": "Estiramiento Cruzado de Hombro",
+          "description": "Descomprime la cápsula articular posterior del hombro",
+          "sets_reps": "1x60-120 segundos por brazo",
+          "extra": [
+            "Mantén el hombro abajo, lejos de las orejas"
+          ]
+        }
+      ],
+      "exercises": [
+        {
+          "group": "A",
+          "name": "Seated Arnold Press",
+          "sets_reps": "4x12",
+          "extra": [
+            "entre sets 45seg hold con un disco encima de la cabeza con codos extendidos",
+            "Activa el core durante el hold para trabajo de estabilidad integrado"
+          ]
+        },
+        {
+          "group": "B",
+          "name": "Seated Cable Lateral Raise",
+          "sets_reps": "3x15",
+          "extra": [
+            "puede trabajarlo unilateral"
+          ]
+        },
+        {
+          "group": "C1",
+          "name": "DB Front Raises",
+          "sets_reps": "3x12",
+          "extra": []
+        },
+        {
+          "group": "C2",
+          "name": "Single Arm Landmine Press",
+          "sets_reps": "3x8",
+          "extra": []
+        },
+        {
+          "group": "D",
+          "name": "Rear Delt Fly",
+          "sets_reps": "3x12",
+          "extra": []
+        },
+        {
+          "group": "E",
+          "name": "Incline bench supported Y raise",
+          "sets_reps": "4x12",
+          "extra": []
+        },
+        {
+          "group": "F",
+          "name": "Calves Raises",
+          "sets_reps": "4x10",
+          "extra": [
+            "unilateral"
+          ]
+        },
+        {
+          "group": "G",
+          "name": "Hack Calf Raises",
+          "sets_reps": "3x10",
+          "extra": [
+            "Pausa 2 segundos en el máximo estiramiento abajo en cada repetición para mejorar la dorsiflexión y movilidad del tobillo"
+          ]
+        }
+      ]
+    },
+    {
+      "day": "Thursday",
+      "focus": "Legs",
+      "reference_file": "4 thursday - legs.pdf",
+      "mobility": [
+        {
+          "name": "Isometría Analgésica (Spanish Squat Holds)",
+          "description": "Reducir dolor y generar analgesia en tendón rotuliano",
+          "sets_reps": "3 series de 45 segundos",
+          "extra": [
+            "Peso corporal"
+          ]
+        },
+        {
+          "name": "Transiciones 90/90 de Cadera",
+          "description": "Abrir cápsula articular profunda",
+          "sets_reps": "2x10 por lado",
+          "extra": [
+            "Evita compensaciones lumbares en la sentadilla"
+          ]
+        },
+        {
+          "name": "Prying Goblet Squat",
+          "description": "Sostener la posición profunda abriendo rodillas",
+          "sets_reps": "1 minuto",
+          "extra": [
+            "Carga muy ligera"
+          ]
+        }
+      ],
+      "stretch": [
+        {
+          "name": "Estiramiento Figura 4 (Supino)",
+          "description": "Libera rotadores externos tras la intensa compresión articular de las sentadillas",
+          "sets_reps": "1x60-120 segundos por lado",
+          "extra": [
+            "Apoya la cabeza relajada en el piso"
+          ]
+        },
+        {
+          "name": "Estiramiento de Isquiosurales con Banda (Supino)",
+          "description": "Disminuye la tensión en la inserción posterior de la rodilla",
+          "sets_reps": "1x60-120 segundos por lado",
+          "extra": [
+            "Mantén la rodilla de trabajo ligeramente desbloqueada"
+          ]
+        }
+      ],
+      "exercises": [
+        {
+          "group": "A",
+          "name": "Back Squat",
+          "sets_reps": "2x12, 2x8",
+          "extra": [
+            "Implementar un tempo de 3 a 4 segundos en la fase de descenso (excéntrico)",
+            "Esto fortalece la capacidad del tendón patelar para absorber cargas"
+          ]
+        },
+        {
+          "group": "B",
+          "name": "Leg Curl",
+          "sets_reps": "3x12",
+          "extra": [
+            "pesado",
+            "Freno principal de la rodilla, clave para prevenir recaídas de la tendinitis"
+          ]
+        },
+        {
+          "group": "C",
+          "name": "Bulgarian Split Squat",
+          "sets_reps": "3x15 por lado",
+          "extra": [
+            "Hack Squat temporalmente eliminado de la rutina para reducir el volumen de compresión articular"
+          ]
+        },
+        {
+          "group": "D",
+          "name": "Dual Kettlebell Deadlift",
+          "sets_reps": "3x15",
+          "extra": [
+            "muy lento y controlado, buena postura",
+            "Intervención vital para la longevidad de la cadena posterior"
+          ]
+        },
+        {
+          "group": "E",
+          "name": "Sumo Deadlift",
+          "sets_reps": "3x15",
+          "extra": [
+            "mismo peso del movimiento anterior"
+          ]
+        }
+      ]
+    },
+    {
+      "day": "Friday",
+      "focus": "Tricep + Bicep",
+      "reference_file": "5 friday - tricep + bicep.pdf",
+      "mobility": [
+        {
+          "name": "CARs de Muñeca y Codo",
+          "description": "Incrementar flujo sanguíneo en antebrazos",
+          "sets_reps": "2 minutos",
+          "extra": [
+            "Prepara tejido para tensión directa en tríceps y bíceps"
+          ]
+        },
+        {
+          "name": "Estiramiento Dinámico de Pectoral/Bíceps en Pared",
+          "description": "Elongar la cadena anterior",
+          "sets_reps": "2x15 segundos por brazo",
+          "extra": []
+        }
+      ],
+      "stretch": [
+        {
+          "name": "Estiramiento de Tríceps por Encima de la Cabeza",
+          "description": "Acelera recuperación de la fascia del tríceps tras aislamientos",
+          "sets_reps": "1x60-120 segundos por brazo",
+          "extra": []
+        },
+        {
+          "name": "Estiramiento de Bíceps contra Pared",
+          "description": "Libera tensión en tendones del codo y hombro anterior",
+          "sets_reps": "1x60-120 segundos por brazo",
+          "extra": [
+            "Rota el torso suavemente hacia afuera"
+          ]
+        }
+      ],
+      "exercises": [
+        {
+          "group": "A1",
+          "name": "Rope Tricep Pushdowns",
+          "sets_reps": "4x10",
+          "extra": []
+        },
+        {
+          "group": "A2",
+          "name": "Diamond Push-Up",
+          "sets_reps": "4x12",
+          "extra": [
+            "peso en rodillas de ser necesario"
+          ]
+        },
+        {
+          "group": "B1",
+          "name": "Single Arm Dumbbell Tricep Kickback",
+          "sets_reps": "3x10",
+          "extra": [
+            "las dos macuernas al mismo tiempo"
+          ]
+        },
+        {
+          "group": "B2",
+          "name": "Seated Bicep Curl",
+          "sets_reps": "3x15",
+          "extra": []
+        },
+        {
+          "group": "C",
+          "name": "Standing Bicep Curl on Cable Machine",
+          "sets_reps": "3x12",
+          "extra": []
+        },
+        {
+          "group": "D1",
+          "name": "Barbell Bicep Curls",
+          "sets_reps": "4x12",
+          "extra": []
+        },
+        {
+          "group": "D2",
+          "name": "DB Concentration Curl",
+          "sets_reps": "3x12",
+          "extra": [
+            "posicion hammer"
+          ]
+        }
+      ]
+    }
+  ]
+}

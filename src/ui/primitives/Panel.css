@@ -1,0 +1,21 @@
+.panel {
+  border: var(--border-w) solid var(--color-fg);
+  background: var(--color-bg);
+  padding: var(--space-4);
+}
+
+.panel--thin {
+  border-width: var(--border-w-thin);
+}
+
+.panel--shadow-fg {
+  box-shadow: var(--shadow-hard);
+}
+
+.panel--shadow-accent {
+  box-shadow: var(--shadow-hard-accent);
+}
+
+.panel--shadow-accent-2 {
+  box-shadow: var(--shadow-hard-accent-2);
+}
