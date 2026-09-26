@@ -58,8 +58,18 @@ async function boot() {
       }),
     ];
 
+    nodes.push(
+      renderSections({
+        routine,
+        openSections: s.openSections,
+        onToggle: (key, open) => state.patch({ openSections: { ...state.get().openSections, [key]: open } }),
+      }),
+    );
+
     if (isPreview) {
-      nodes.push(
+      const dock = document.createElement('div');
+      dock.className = 'confirm-dock';
+      dock.append(
         renderConfirmBar({
           weekday: s.preview,
           onConfirm: async () => {
@@ -69,16 +79,10 @@ async function boot() {
           onBack: () => state.set({ preview: s.selected }),
         }),
       );
+      nodes.push(dock);
     }
 
-    nodes.push(
-      renderSections({
-        routine,
-        openSections: s.openSections,
-        onToggle: (key, open) => state.patch({ openSections: { ...state.get().openSections, [key]: open } }),
-      }),
-    );
-
+    root.classList.toggle('app--docked', isPreview);
     root.replaceChildren(...nodes);
   }
 
