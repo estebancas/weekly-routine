@@ -2,17 +2,19 @@
 
 Goal: every push runs the pipeline (install, build, unit tests, e2e). A deploy to Cloudflare only happens on `main`, only after the pipeline is green, and only when you approve it by hand in the GitHub UI.
 
-Status: `.nvmrc`, the `test`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). Unit, integration and end-to-end tests are all done (section 6); `npm test` and `npm run e2e` both run for real now, and the e2e CI job no longer skips itself. Of the manual steps in section 4: the GitHub repo (4.1) and branch protection (4.5) are done; the Cloudflare API token (4.2), the two GitHub secrets (4.3), and the `production` environment's required reviewer + branch restriction (4.4) are still pending — see the checklist in section 7.
+Status: `.nvmrc`, the `lint`/`test`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). Unit, integration and end-to-end tests are all done (section 6); `npm test` and `npm run e2e` both run for real now, and the e2e CI job no longer skips itself. A `lint` job now runs in parallel with `test`. Of the manual steps in section 4: the GitHub repo (4.1) and branch protection for the original two jobs (4.5) are done; the Cloudflare API token (4.2), the two GitHub secrets (4.3), and the `production` environment's required reviewer + branch restriction (4.4) are still pending — see the checklist in section 7.
 
 ---
 
 ## 1. Pipeline shape
 
 ```
-push / PR ─► test (unit + build) ─► e2e ─► [ wait for approval ] ─► deploy
+push / PR ─► lint ────────────────────────────────────────────┐
+         └─► test (unit + build) ─► e2e ─► [ wait for approval ] ─► deploy
                                               only on main
 ```
 
+- **lint**: `npm ci`, `npm run lint`. Runs in parallel with `test`, no `needs`.
 - **test**: `npm ci`, `npm run build`, `npm test`. Fails the run on any error.
 - **e2e**: depends on `test`. Builds, serves `dist/` with `vite preview`, runs Playwright against it. Skipped automatically until a `playwright.config.*` file exists.
 - **deploy**: depends on both. Runs only for `main` (push or manual dispatch). Bound to a GitHub *environment* named `production` that has you as a required reviewer. The job pauses at "Waiting for review" until you approve it. That approval is the manual trigger.
@@ -42,6 +44,18 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
   test:
     name: Unit tests + build
     runs-on: ubuntu-latest
@@ -129,7 +143,7 @@ Notes:
 ## 3. Repo changes to make alongside the workflow
 
 1. **Pin Node.** Create `.nvmrc` containing `26`. `setup-node` reads it, and it documents the local version.
-2. **`package.json` scripts** (done): `"test": "vitest run --coverage"` runs the full Vitest suite (unit + integration) with the coverage gate — this is what CI's `test` job runs. `"e2e": "playwright test"` runs the Playwright suite against a production build — this is what CI's `e2e` job runs, against the `dist` artifact the `test` job already built.
+2. **`package.json` scripts** (done): `"lint": "eslint ."` is what CI's `lint` job runs. `"test": "vitest run --coverage"` runs the full Vitest suite (unit + integration) with the coverage gate — this is what CI's `test` job runs. `"e2e": "playwright test"` runs the Playwright suite against a production build — this is what CI's `e2e` job runs, against the `dist` artifact the `test` job already built.
 3. **Optional but recommended:** `"engines": { "node": ">=22.12" }` in `package.json`, matching Vite 8's requirement.
 
 ---
@@ -178,7 +192,7 @@ Save. From now on the `deploy` job stops at "Waiting for review" and does nothin
 ### 4.5 Branch protection (recommended)
 
 Repo → **Settings** → **Branches** → **Add rule** for `main`:
-- Require status checks to pass: select `Unit tests + build` and `End-to-end`.
+- Require status checks to pass: select `Unit tests + build`, `End-to-end`, and any other job added later (`Lint`, `Mutation testing`, `Bundle size`, `Dependency audit`) once it has run at least once on the default branch.
 - Optionally require a pull request before merging.
 
 This keeps a broken commit from ever reaching the point where you could approve a deploy.
@@ -227,5 +241,9 @@ All done — Vitest unit + integration, and Playwright end-to-end. See `CLAUDE.m
 - [ ] Cloudflare API token created
 - [ ] `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets added
 - [ ] `production` environment with required reviewer and `main` only
-- [x] Branch protection on `main` requiring the two check jobs
+- [x] Branch protection on `main` requiring the two original check jobs (`Unit tests + build`, `End-to-end`)
+- [ ] `Lint` added to branch protection required checks
+- [ ] `Mutation testing` added to branch protection required checks
+- [ ] `Bundle size` added to branch protection required checks
+- [ ] `Dependency audit` added to branch protection required checks
 - [ ] First run approved and Version ID verified
