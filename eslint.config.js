@@ -11,6 +11,8 @@ export default [
       'playwright-report',
       'test-results',
       'public',
+      '.stryker-tmp',
+      'reports',
     ],
   },
   js.configs.recommended,

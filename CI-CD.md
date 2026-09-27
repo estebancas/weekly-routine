@@ -2,7 +2,7 @@
 
 Goal: every push runs the pipeline (install, build, unit tests, e2e). A deploy to Cloudflare only happens on `main`, only after the pipeline is green, and only when you approve it by hand in the GitHub UI.
 
-Status: `.nvmrc`, the `lint`/`test`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). Unit, integration and end-to-end tests are all done (section 6); `npm test` and `npm run e2e` both run for real now, and the e2e CI job no longer skips itself. A `lint` job now runs in parallel with `test`. Of the manual steps in section 4: the GitHub repo (4.1) and branch protection for the original two jobs (4.5) are done; the Cloudflare API token (4.2), the two GitHub secrets (4.3), and the `production` environment's required reviewer + branch restriction (4.4) are still pending — see the checklist in section 7.
+Status: `.nvmrc`, the `lint`/`test`/`mutate`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). Unit, integration, mutation and end-to-end tests are all done (section 6); `npm test`, `npm run mutate` and `npm run e2e` all run for real now, and the e2e CI job no longer skips itself. `lint` and `mutation` jobs now run in parallel with `test`. Of the manual steps in section 4: the GitHub repo (4.1) and branch protection for `Unit tests + build`, `End-to-end`, and `Lint` (4.5) are done; the Cloudflare API token (4.2), the two GitHub secrets (4.3), and the `production` environment's required reviewer + branch restriction (4.4) are still pending — see the checklist in section 7.
 
 ---
 
@@ -10,12 +10,14 @@ Status: `.nvmrc`, the `lint`/`test`/`e2e` scripts and `.github/workflows/ci.yml`
 
 ```
 push / PR ─► lint ────────────────────────────────────────────┐
+         ├─► mutation testing ──────────────────────────────┤
          └─► test (unit + build) ─► e2e ─► [ wait for approval ] ─► deploy
                                               only on main
 ```
 
 - **lint**: `npm ci`, `npm run lint`. Runs in parallel with `test`, no `needs`.
 - **test**: `npm ci`, `npm run build`, `npm test`. Fails the run on any error.
+- **mutation testing**: runs in parallel with `test`, no `needs`. `npm ci`, `npm run mutate`. Uploads `reports/mutation` as an artifact even on failure.
 - **e2e**: depends on `test`. Builds, serves `dist/` with `vite preview`, runs Playwright against it. Skipped automatically until a `playwright.config.*` file exists.
 - **deploy**: depends on both. Runs only for `main` (push or manual dispatch). Bound to a GitHub *environment* named `production` that has you as a required reviewer. The job pauses at "Waiting for review" until you approve it. That approval is the manual trigger.
 
@@ -72,6 +74,24 @@ jobs:
         with:
           name: dist
           path: dist
+          retention-days: 7
+
+  mutation:
+    name: Mutation testing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run mutate
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-report
+          path: reports/mutation
           retention-days: 7
 
   e2e:
@@ -143,7 +163,7 @@ Notes:
 ## 3. Repo changes to make alongside the workflow
 
 1. **Pin Node.** Create `.nvmrc` containing `26`. `setup-node` reads it, and it documents the local version.
-2. **`package.json` scripts** (done): `"lint": "eslint ."` is what CI's `lint` job runs. `"test": "vitest run --coverage"` runs the full Vitest suite (unit + integration) with the coverage gate — this is what CI's `test` job runs. `"e2e": "playwright test"` runs the Playwright suite against a production build — this is what CI's `e2e` job runs, against the `dist` artifact the `test` job already built.
+2. **`package.json` scripts** (done): `"lint": "eslint ."` is what CI's `lint` job runs. `"test": "vitest run --coverage"` runs the full Vitest suite (unit + integration) with the coverage gate — this is what CI's `test` job runs. `"mutate": "stryker run"` runs Stryker mutation testing — this is what CI's `mutation` job runs. `"e2e": "playwright test"` runs the Playwright suite against a production build — this is what CI's `e2e` job runs, against the `dist` artifact the `test` job already built.
 3. **Optional but recommended:** `"engines": { "node": ">=22.12" }` in `package.json`, matching Vite 8's requirement.
 
 ---
@@ -223,11 +243,12 @@ The top entry's Version ID should match the one in the Actions log. Open the app
 
 ## 6. Test work
 
-All done — Vitest unit + integration, and Playwright end-to-end. See `CLAUDE.md`'s Tests section for layout and conventions.
+All done — Vitest unit + integration, Stryker mutation testing, and Playwright end-to-end. See `CLAUDE.md`'s Tests section for layout and conventions.
 
 - **Unit** (`tests/unit/**`, Vitest + `jsdom` + `fake-indexeddb`): every module in `src/` in isolation — `time.js`'s `nowInZone` across the CR midnight/DST-free boundary and the ICU "hour 24" quirk, `routine.js`'s `groupSupersets` and `getRoutine`, a data contract on `routine.json` itself, `state.js`, `store.js` against `fake-indexeddb`, and every `ui/` renderer and primitive.
 - **Integration** (`tests/integration/app.test.js`, Vitest + `jsdom`): boots the real `src/main.js` with a faked clock, driving boot/preview/confirm/reload/weekend flows end to end.
 - **Coverage gate**: `npm test` (`vitest run --coverage`) enforces 90% lines/branches/functions/statements over `src/**/*.js` and is what CI's `test` job runs.
+- **Mutation testing** (`stryker.config.json`, `npm run mutate`): checks that the coverage above has real assertions behind it, not just executed lines. Runs against `vitest.stryker.config.js` (a flat Vitest config Stryker needs) with a `thresholds.break` of 85 (baseline ~90%). Needs a locally-applied `patch-package` fix for an upstream Vitest 5 incompatibility — see `CLAUDE.md`'s Mutation testing note.
 - **End-to-end** (`e2e/**`, `@playwright/test`, config at `playwright.config.js`): a real Chromium against `vite preview` on `:4173`, covering what jsdom can't — boot on today's weekday with the correct section open for the time; preview/Volver/confirm/reload flows including a stale override being dropped; Saturday and Sunday rendering the weekend block; the manifest response; an active service worker; and a page reload while offline after the first visit. `npm run e2e` is what CI's `e2e` job runs, against the `dist` the `test` job already built (locally, run `npm run build` first). `page.clock.setFixedTime(...)` fakes the wall clock (the dev-only `?now=` override doesn't exist in production builds).
 
 ---
@@ -235,14 +256,13 @@ All done — Vitest unit + integration, and Playwright end-to-end. See `CLAUDE.m
 ## 7. Checklist
 
 - [x] `.nvmrc` with `26`
-- [x] `test` and `e2e` scripts in `package.json`
+- [x] `lint`, `test`, `mutate` and `e2e` scripts in `package.json`
 - [x] `.github/workflows/ci.yml`
 - [x] GitHub repo created and `main` pushed
 - [ ] Cloudflare API token created
 - [ ] `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets added
 - [ ] `production` environment with required reviewer and `main` only
-- [x] Branch protection on `main` requiring the two original check jobs (`Unit tests + build`, `End-to-end`)
-- [ ] `Lint` added to branch protection required checks
+- [x] Branch protection on `main` requiring `Unit tests + build`, `End-to-end`, and `Lint`
 - [ ] `Mutation testing` added to branch protection required checks
 - [ ] `Bundle size` added to branch protection required checks
 - [ ] `Dependency audit` added to branch protection required checks

@@ -79,6 +79,23 @@ describe('boot', () => {
     await bootApp({ now: '2026-09-29T03:00:00Z' });
     expect(heroDay()).toBe('Lunes');
   });
+
+  it('requests storage persistence', async () => {
+    globalThis.indexedDB = new IDBFactory();
+    vi.resetModules();
+    const store = await import('../../src/store.js');
+    const persistSpy = vi.spyOn(store, 'requestPersistence');
+
+    document.body.innerHTML = '<main id="app" class="app"></main>';
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-09-29T16:00:00Z'));
+    await import('../../src/main.js');
+    await vi.waitFor(() => {
+      expect(document.querySelector('.hero__day')).toBeTruthy();
+    });
+
+    expect(persistSpy).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('default open section (STRETCH_CUTOFF = 18:30 CR)', () => {
@@ -125,6 +142,7 @@ describe('preview flow', () => {
     expect(confirmBar().querySelector('.confirm__question').textContent).toBe('¿Usar Jueves como rutina de hoy?');
     expect(chip('MAR').getAttribute('aria-pressed')).toBe('true'); // still the selected day
     expect(chip('JUE').classList.contains('chip--preview')).toBe(true);
+    expect(confirmBar().closest('.confirm-dock')).not.toBeNull();
   });
 
   it('re-picking the selected day ends the preview without a click on Volver', async () => {
