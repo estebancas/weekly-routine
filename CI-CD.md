@@ -2,7 +2,7 @@
 
 Goal: every push runs the pipeline (install, build, unit tests, e2e). A deploy to Cloudflare only happens on `main`, only after the pipeline is green, and only when you approve it by hand in the GitHub UI.
 
-Status: plan. Nothing in `.github/` exists yet. Unit and e2e tests do not exist yet either; the pipeline is written so those steps pass while empty and become real as soon as the test tooling lands.
+Status: `.nvmrc`, the `test`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). The manual steps in section 4 are still pending. Unit and e2e tests do not exist yet; the pipeline passes while empty and becomes real as soon as the test tooling lands.
 
 ---
 
@@ -46,15 +46,15 @@ jobs:
     name: Unit tests + build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run build
       - run: npm test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check for Playwright config
         id: has-e2e
         run: |
@@ -73,7 +73,7 @@ jobs:
       - if: steps.has-e2e.outputs.present == 'false'
         run: echo "No playwright.config found, skipping e2e."
       - if: steps.has-e2e.outputs.present == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -82,14 +82,14 @@ jobs:
       - if: steps.has-e2e.outputs.present == 'true'
         run: npx playwright install --with-deps chromium
       - if: steps.has-e2e.outputs.present == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
       - if: steps.has-e2e.outputs.present == 'true'
         run: npm run e2e
       - if: always() && steps.has-e2e.outputs.present == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report
@@ -104,15 +104,15 @@ jobs:
       name: production
       url: https://weekly-routine.estcascor94.workers.dev
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run build
       - name: wrangler deploy
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -121,7 +121,7 @@ jobs:
 
 Notes:
 - The deploy job rebuilds instead of reusing the artifact so the deployed bundle always comes from the exact checked-out commit.
-- `cloudflare/wrangler-action@v3` uses the `wrangler` version from `package.json`, so CI and local deploys match.
+- `cloudflare/wrangler-action@v4` uses the `wrangler` version from `package.json`, so CI and local deploys match.
 - Check the action's current major version on its GitHub page before first use.
 
 ---
