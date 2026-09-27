@@ -9,14 +9,22 @@ A personal, view-only PWA (Spanish UI) that shows the workout routine for the cu
 ## Commands
 
 ```
-npm run dev              # Vite dev server
-npm run build            # production build to dist/
-npm run preview          # serve dist/ locally (also what e2e will target on :4173)
-npm run deploy           # vite build && wrangler deploy
-npm run generate-icons   # regenerate public/*.png from public/icon.svg (pwa-assets.config.js)
+npm run dev               # Vite dev server
+npm run build             # production build to dist/
+npm run preview           # serve dist/ locally (also what e2e will target on :4173)
+npm run deploy            # vite build && wrangler deploy
+npm run generate-icons    # regenerate public/*.png from public/icon.svg (pwa-assets.config.js)
+npm test                  # Vitest (unit + integration) with a v8 coverage gate
+npm run test:unit         # just tests/unit
+npm run test:integration  # just tests/integration
+npm run test:watch        # Vitest in watch mode
 ```
 
-There is no test runner or linter yet; `npm test` is an echo placeholder and `npm run e2e` expects Playwright, which is not installed. `.github/workflows/ci.yml` runs build + test + e2e on every push and PR, and deploys to Cloudflare from `main` only after manual approval on the `production` GitHub environment. The e2e job skips itself until a `playwright.config.*` exists. `CI-CD.md` documents the setup and names the intended first tests: Vitest for `src/time.js` and `src/routine.js`, Playwright against `vite preview`.
+There is no linter yet. `npm run e2e` expects Playwright, which is not installed. `.github/workflows/ci.yml` runs build + test + e2e on every push and PR, and deploys to Cloudflare from `main` only after manual approval on the `production` GitHub environment. The e2e job skips itself until a `playwright.config.*` exists. `CI-CD.md` documents the CI/CD setup; Playwright e2e is still the pending piece.
+
+**Tests.** `tests/unit/**` covers each module in isolation, mirroring `src/`'s layout; `tests/integration/app.test.js` boots the real `src/main.js` in jsdom and drives it through clicks, asserting on the rendered DOM. `vitest.config.js` defines both as Vitest projects, `tests/setup.js` loads `fake-indexeddb/auto` and resets DOM/env/mocks after each test, and `tests/stubs/pwa-register.js` stands in for the `virtual:pwa-register` module Vite generates at build time. `npm test` enforces a 90% v8 coverage threshold (lines/branches/functions/statements) over `src/**/*.js`.
+
+Conventions worth keeping when adding tests: fake only `Date` (`vi.useFakeTimers({ toFake: ['Date'] })` + `vi.setSystemTime`), never the timer queue — `fake-indexeddb` and `vi.waitFor` need real timers to settle. `store.js` and `routine.js` hold module-level state (`dbPromise`, the routine cache), so integration tests `vi.resetModules()` and re-`import()` for a clean slate, with a fresh `new IDBFactory()` per boot unless deliberately reusing one (e.g. reload-across-days tests). The native `<details>` `toggle` event fires as a queued task, not synchronously and not a microtask — await a `setTimeout(…, 0)` (or `vi.waitFor`) after a summary click before asserting on it.
 
 **Faking the clock in dev:** append `?now=2026-09-29T19:05` to the dev URL. It is interpreted as Costa Rica local time (fixed UTC-6) and is stripped out of production builds (`import.meta.env.DEV` guard in `src/time.js`), so e2e tests must use Playwright's `page.clock` instead.
 

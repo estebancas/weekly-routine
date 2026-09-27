@@ -2,7 +2,7 @@
 
 Goal: every push runs the pipeline (install, build, unit tests, e2e). A deploy to Cloudflare only happens on `main`, only after the pipeline is green, and only when you approve it by hand in the GitHub UI.
 
-Status: `.nvmrc`, the `test`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). The manual steps in section 4 are still pending. Unit and e2e tests do not exist yet; the pipeline passes while empty and becomes real as soon as the test tooling lands.
+Status: `.nvmrc`, the `test`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). The manual steps in section 4 are still pending. Unit and integration tests are done (Vitest, see section 6); `npm test` now runs them for real and enforces a coverage gate. End-to-end (Playwright) is still pending — the e2e job keeps skipping itself until a `playwright.config.*` exists.
 
 ---
 
@@ -129,12 +129,7 @@ Notes:
 ## 3. Repo changes to make alongside the workflow
 
 1. **Pin Node.** Create `.nvmrc` containing `26`. `setup-node` reads it, and it documents the local version.
-2. **Add script placeholders to `package.json`** so the pipeline is green before tests exist:
-   ```json
-   "test": "vitest run --passWithNoTests",
-   "e2e": "playwright test"
-   ```
-   Until Vitest is installed, use `"test": "echo \"no unit tests yet\""` instead. Swap to the Vitest line when you add it.
+2. **`package.json` scripts** (done): `"test": "vitest run --coverage"` runs the full Vitest suite (unit + integration) with the coverage gate — this is what CI's `test` job runs. `"e2e": "playwright test"` is still a placeholder until Playwright is installed.
 3. **Optional but recommended:** `"engines": { "node": ">=22.12" }` in `package.json`, matching Vite 8's requirement.
 
 ---
@@ -212,13 +207,14 @@ The top entry's Version ID should match the one in the Actions log. Open the app
 
 ---
 
-## 6. Future test work this pipeline is ready for
+## 6. Test work
 
-Unit (Vitest, `npm i -D vitest`), good first targets:
-- `src/time.js`: `nowInZone` with fixed `Date` inputs across the 18:30 boundary and midnight in Costa Rica.
-- `src/routine.js`: `groupSupersets` grouping (A1/A2 pairs, lone D1, plain letters) and weekend lookup.
+Done — Vitest unit + integration suite (`vitest`, `jsdom`, `fake-indexeddb`, `@vitest/coverage-v8`), see `CLAUDE.md`'s Tests section for layout and conventions:
+- **Unit** (`tests/unit/**`): every module in `src/` in isolation — `time.js`'s `nowInZone` across the CR midnight/DST-free boundary and the ICU "hour 24" quirk, `routine.js`'s `groupSupersets` and `getRoutine`, a data contract on `routine.json` itself, `state.js`, `store.js` against `fake-indexeddb`, and every `ui/` renderer and primitive.
+- **Integration** (`tests/integration/app.test.js`): boots the real `src/main.js` in jsdom with a faked clock, driving boot/preview/confirm/reload/weekend flows end to end.
+- **Gate**: `npm test` (`vitest run --coverage`) enforces 90% lines/branches/functions/statements over `src/**/*.js` and is what CI's `test` job runs.
 
-End-to-end (Playwright, `npm i -D @playwright/test` + `npx playwright init`), mirroring the flows already verified by hand:
+Still pending — end-to-end (Playwright, `npm i -D @playwright/test` + `npx playwright init`), mirroring the flows already verified by hand and in the Vitest integration suite:
 - Home opens on today's weekday with the correct section open for the time.
 - Tapping another day shows the preview tag and the bottom confirm bar; reload without confirming resets.
 - Confirming persists across reload and shows the changed tag; a stale override is dropped.
