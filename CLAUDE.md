@@ -18,15 +18,18 @@ npm test                  # Vitest (unit + integration) with a v8 coverage gate
 npm run test:unit         # just tests/unit
 npm run test:integration  # just tests/integration
 npm run test:watch        # Vitest in watch mode
+npm run e2e               # Playwright against a production build (run `npm run build` first)
 ```
 
-There is no linter yet. `npm run e2e` expects Playwright, which is not installed. `.github/workflows/ci.yml` runs build + test + e2e on every push and PR, and deploys to Cloudflare from `main` only after manual approval on the `production` GitHub environment. The e2e job skips itself until a `playwright.config.*` exists. `CI-CD.md` documents the CI/CD setup; Playwright e2e is still the pending piece.
+There is no linter yet. `.github/workflows/ci.yml` runs build + test + e2e on every push and PR, and deploys to Cloudflare from `main` only after manual approval on the `production` GitHub environment. `CI-CD.md` documents the CI/CD setup.
 
 **Tests.** `tests/unit/**` covers each module in isolation, mirroring `src/`'s layout; `tests/integration/app.test.js` boots the real `src/main.js` in jsdom and drives it through clicks, asserting on the rendered DOM. `vitest.config.js` defines both as Vitest projects, `tests/setup.js` loads `fake-indexeddb/auto` and resets DOM/env/mocks after each test, and `tests/stubs/pwa-register.js` stands in for the `virtual:pwa-register` module Vite generates at build time. `npm test` enforces a 90% v8 coverage threshold (lines/branches/functions/statements) over `src/**/*.js`.
 
-Conventions worth keeping when adding tests: fake only `Date` (`vi.useFakeTimers({ toFake: ['Date'] })` + `vi.setSystemTime`), never the timer queue — `fake-indexeddb` and `vi.waitFor` need real timers to settle. `store.js` and `routine.js` hold module-level state (`dbPromise`, the routine cache), so integration tests `vi.resetModules()` and re-`import()` for a clean slate, with a fresh `new IDBFactory()` per boot unless deliberately reusing one (e.g. reload-across-days tests). The native `<details>` `toggle` event fires as a queued task, not synchronously and not a microtask — await a `setTimeout(…, 0)` (or `vi.waitFor`) after a summary click before asserting on it.
+Conventions worth keeping when adding Vitest tests: fake only `Date` (`vi.useFakeTimers({ toFake: ['Date'] })` + `vi.setSystemTime`), never the timer queue — `fake-indexeddb` and `vi.waitFor` need real timers to settle. `store.js` and `routine.js` hold module-level state (`dbPromise`, the routine cache), so integration tests `vi.resetModules()` and re-`import()` for a clean slate, with a fresh `new IDBFactory()` per boot unless deliberately reusing one (e.g. reload-across-days tests). The native `<details>` `toggle` event fires as a queued task, not synchronously and not a microtask — await a `setTimeout(…, 0)` (or `vi.waitFor`) after a summary click before asserting on it.
 
-**Faking the clock in dev:** append `?now=2026-09-29T19:05` to the dev URL. It is interpreted as Costa Rica local time (fixed UTC-6) and is stripped out of production builds (`import.meta.env.DEV` guard in `src/time.js`), so e2e tests must use Playwright's `page.clock` instead.
+`e2e/**` (Playwright, config at `playwright.config.js`) runs a full browser against `vite preview` on `:4173` — it needs `dist/` already built (CI reuses the `test` job's artifact; locally run `npm run build` first, or leave a `npm run preview` open for `reuseExistingServer`). It exists to cover what jsdom can't: a real service worker, an offline reload, and the actual manifest response. `e2e/helpers.js` has the shared `gotoAt`/locator helpers.
+
+**Faking the clock in dev:** append `?now=2026-09-29T19:05` to the dev URL. It is interpreted as Costa Rica local time (fixed UTC-6) and is stripped out of production builds (`import.meta.env.DEV` guard in `src/time.js`). e2e specs instead use `page.clock.setFixedTime(...)` (fakes `Date` only, not timers — matching the Vitest convention above) before navigating.
 
 ## Architecture
 
