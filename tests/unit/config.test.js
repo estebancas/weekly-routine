@@ -14,13 +14,9 @@ import {
 describe('config', () => {
   it('day-name arrays have 7 entries and are index-aligned (0 = Sunday)', () => {
     for (const arr of [DAY_NAMES, DAY_SHORT, JSON_DAY_NAMES]) expect(arr).toHaveLength(7);
-    expect(DAY_NAMES[0]).toBe('Domingo');
+    expect(DAY_NAMES).toEqual(['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']);
     expect(DAY_SHORT[0]).toBe('DOM');
-    expect(JSON_DAY_NAMES[0]).toBe('Sunday');
-    expect(DAY_NAMES[1]).toBe('Lunes');
-    expect(JSON_DAY_NAMES[1]).toBe('Monday');
-    expect(DAY_NAMES[6]).toBe('Sábado');
-    expect(JSON_DAY_NAMES[6]).toBe('Saturday');
+    expect(JSON_DAY_NAMES).toEqual(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
   });
 
   it('DAY_ORDER is a permutation of 0-6 starting at Monday(1) and ending at Sunday(0)', () => {
@@ -36,16 +32,20 @@ describe('config', () => {
     expect(STRETCH_CUTOFF_MINUTES).toBe(1110);
   });
 
-  it('WEEKEND covers exactly Saturday(6) and Sunday(0)', () => {
+  it('WEEKEND covers exactly Saturday(6) and Sunday(0), each with a focus and a note', () => {
     expect(Object.keys(WEEKEND).map(Number).sort()).toEqual([0, 6]);
-    expect(WEEKEND[6].focus).toBeTruthy();
-    expect(WEEKEND[0].focus).toBeTruthy();
+    expect(WEEKEND[6]).toEqual({ focus: 'Ciclismo', note: 'Día de bici. Sin rutina de fuerza.' });
+    expect(WEEKEND[0]).toEqual({ focus: 'Descanso', note: 'Descanso total. Sin rutina hoy.' });
   });
 
   it('SECTIONS lists mobility/exercises/stretch numbered 01-03', () => {
     expect(SECTIONS.map((s) => s.key)).toEqual(['mobility', 'exercises', 'stretch']);
     expect(SECTIONS.map((s) => s.num)).toEqual(['01', '02', '03']);
     for (const s of SECTIONS) expect(s.title).toBeTruthy();
+  });
+
+  it('LABELS.appName is set', () => {
+    expect(LABELS.appName).toBe('Rutina semanal');
   });
 
   it('LABELS.confirmQuestion interpolates the day name', () => {

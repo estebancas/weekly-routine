@@ -77,6 +77,23 @@ describe('groupSupersets', () => {
     expect(out).toEqual([{ letter: '', superset: false, items: [item('')] }]);
   });
 
+  it('collapses double-digit superset numbers: A10, A11', () => {
+    const out = groupSupersets([item('A10'), item('A11')]);
+    expect(out).toHaveLength(1);
+    expect(out[0]).toMatchObject({ letter: 'A', superset: true });
+    expect(out[0].items).toHaveLength(2);
+  });
+
+  it('does not match a group with trailing junk after the number: A1Z', () => {
+    const out = groupSupersets([item('A1Z')]);
+    expect(out).toEqual([{ letter: 'A1Z', superset: false, items: [item('A1Z')] }]);
+  });
+
+  it('does not match a group with a leading character before the letters: " A1"', () => {
+    const out = groupSupersets([item(' A1')]);
+    expect(out).toEqual([{ letter: ' A1', superset: false, items: [item(' A1')] }]);
+  });
+
   it('does not mutate the input array or its items', () => {
     const items = [item('A1'), item('A2')];
     const snapshot = JSON.parse(JSON.stringify(items));

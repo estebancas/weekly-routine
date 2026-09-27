@@ -154,6 +154,14 @@ describe('Details', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(onToggle).toHaveBeenCalledExactlyOnceWith(true);
   });
+
+  it('does not attach a toggle listener when onToggle is omitted', async () => {
+    const el = Details({ num: '01', title: 'x' });
+    document.body.append(el);
+    el.querySelector('summary').click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(el.open).toBe(true); // still toggles natively, just nothing to notify
+  });
 });
 
 describe('Input', () => {
