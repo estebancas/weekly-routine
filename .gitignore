@@ -5,3 +5,5 @@ dev-dist
 .dev.vars
 .DS_Store
 coverage
+playwright-report
+test-results

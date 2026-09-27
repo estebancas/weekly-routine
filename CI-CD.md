@@ -2,7 +2,7 @@
 
 Goal: every push runs the pipeline (install, build, unit tests, e2e). A deploy to Cloudflare only happens on `main`, only after the pipeline is green, and only when you approve it by hand in the GitHub UI.
 
-Status: `.nvmrc`, the `test`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). The manual steps in section 4 are still pending. Unit and integration tests are done (Vitest, see section 6); `npm test` now runs them for real and enforces a coverage gate. End-to-end (Playwright) is still pending — the e2e job keeps skipping itself until a `playwright.config.*` exists.
+Status: `.nvmrc`, the `test`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). The manual steps in section 4 are still pending. Unit, integration and end-to-end tests are all done (section 6); `npm test` and `npm run e2e` both run for real now, and the e2e CI job no longer skips itself.
 
 ---
 
@@ -129,7 +129,7 @@ Notes:
 ## 3. Repo changes to make alongside the workflow
 
 1. **Pin Node.** Create `.nvmrc` containing `26`. `setup-node` reads it, and it documents the local version.
-2. **`package.json` scripts** (done): `"test": "vitest run --coverage"` runs the full Vitest suite (unit + integration) with the coverage gate — this is what CI's `test` job runs. `"e2e": "playwright test"` is still a placeholder until Playwright is installed.
+2. **`package.json` scripts** (done): `"test": "vitest run --coverage"` runs the full Vitest suite (unit + integration) with the coverage gate — this is what CI's `test` job runs. `"e2e": "playwright test"` runs the Playwright suite against a production build — this is what CI's `e2e` job runs, against the `dist` artifact the `test` job already built.
 3. **Optional but recommended:** `"engines": { "node": ">=22.12" }` in `package.json`, matching Vite 8's requirement.
 
 ---
@@ -209,19 +209,12 @@ The top entry's Version ID should match the one in the Actions log. Open the app
 
 ## 6. Test work
 
-Done — Vitest unit + integration suite (`vitest`, `jsdom`, `fake-indexeddb`, `@vitest/coverage-v8`), see `CLAUDE.md`'s Tests section for layout and conventions:
-- **Unit** (`tests/unit/**`): every module in `src/` in isolation — `time.js`'s `nowInZone` across the CR midnight/DST-free boundary and the ICU "hour 24" quirk, `routine.js`'s `groupSupersets` and `getRoutine`, a data contract on `routine.json` itself, `state.js`, `store.js` against `fake-indexeddb`, and every `ui/` renderer and primitive.
-- **Integration** (`tests/integration/app.test.js`): boots the real `src/main.js` in jsdom with a faked clock, driving boot/preview/confirm/reload/weekend flows end to end.
-- **Gate**: `npm test` (`vitest run --coverage`) enforces 90% lines/branches/functions/statements over `src/**/*.js` and is what CI's `test` job runs.
+All done — Vitest unit + integration, and Playwright end-to-end. See `CLAUDE.md`'s Tests section for layout and conventions.
 
-Still pending — end-to-end (Playwright, `npm i -D @playwright/test` + `npx playwright init`), mirroring the flows already verified by hand and in the Vitest integration suite:
-- Home opens on today's weekday with the correct section open for the time.
-- Tapping another day shows the preview tag and the bottom confirm bar; reload without confirming resets.
-- Confirming persists across reload and shows the changed tag; a stale override is dropped.
-- Saturday and Sunday render the weekend block.
-- Manifest and service worker are served; page loads offline after first visit.
-
-Playwright config should point `baseURL` at `http://localhost:4173` and use `webServer: { command: 'npx vite preview --port 4173 --strictPort', reuseExistingServer: true }`. The dev-only `?now=` clock override does not exist in production builds, so e2e tests that need a fixed time should use Playwright's `page.clock` API instead.
+- **Unit** (`tests/unit/**`, Vitest + `jsdom` + `fake-indexeddb`): every module in `src/` in isolation — `time.js`'s `nowInZone` across the CR midnight/DST-free boundary and the ICU "hour 24" quirk, `routine.js`'s `groupSupersets` and `getRoutine`, a data contract on `routine.json` itself, `state.js`, `store.js` against `fake-indexeddb`, and every `ui/` renderer and primitive.
+- **Integration** (`tests/integration/app.test.js`, Vitest + `jsdom`): boots the real `src/main.js` with a faked clock, driving boot/preview/confirm/reload/weekend flows end to end.
+- **Coverage gate**: `npm test` (`vitest run --coverage`) enforces 90% lines/branches/functions/statements over `src/**/*.js` and is what CI's `test` job runs.
+- **End-to-end** (`e2e/**`, `@playwright/test`, config at `playwright.config.js`): a real Chromium against `vite preview` on `:4173`, covering what jsdom can't — boot on today's weekday with the correct section open for the time; preview/Volver/confirm/reload flows including a stale override being dropped; Saturday and Sunday rendering the weekend block; the manifest response; an active service worker; and a page reload while offline after the first visit. `npm run e2e` is what CI's `e2e` job runs, against the `dist` the `test` job already built (locally, run `npm run build` first). `page.clock.setFixedTime(...)` fakes the wall clock (the dev-only `?now=` override doesn't exist in production builds).
 
 ---
 

@@ -21,6 +21,7 @@
     "idb": "^8.0.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@vite-pwa/assets-generator": "^1.0.0",
     "@vitest/coverage-v8": "^5.0.2",
     "fake-indexeddb": "^6.2.5",
