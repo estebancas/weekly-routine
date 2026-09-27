@@ -2,7 +2,7 @@
 
 Goal: every push runs the pipeline (install, build, unit tests, e2e). A deploy to Cloudflare only happens on `main`, only after the pipeline is green, and only when you approve it by hand in the GitHub UI.
 
-Status: `.nvmrc`, the `test`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). The manual steps in section 4 are still pending. Unit, integration and end-to-end tests are all done (section 6); `npm test` and `npm run e2e` both run for real now, and the e2e CI job no longer skips itself.
+Status: `.nvmrc`, the `test`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). Unit, integration and end-to-end tests are all done (section 6); `npm test` and `npm run e2e` both run for real now, and the e2e CI job no longer skips itself. Of the manual steps in section 4: the GitHub repo (4.1) and branch protection (4.5) are done; the Cloudflare API token (4.2), the two GitHub secrets (4.3), and the `production` environment's required reviewer + branch restriction (4.4) are still pending — see the checklist in section 7.
 
 ---
 
@@ -220,12 +220,12 @@ All done — Vitest unit + integration, and Playwright end-to-end. See `CLAUDE.m
 
 ## 7. Checklist
 
-- [ ] `.nvmrc` with `26`
-- [ ] `test` and `e2e` scripts in `package.json`
-- [ ] `.github/workflows/ci.yml`
-- [ ] GitHub repo created and `main` pushed
+- [x] `.nvmrc` with `26`
+- [x] `test` and `e2e` scripts in `package.json`
+- [x] `.github/workflows/ci.yml`
+- [x] GitHub repo created and `main` pushed
 - [ ] Cloudflare API token created
 - [ ] `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets added
 - [ ] `production` environment with required reviewer and `main` only
-- [ ] Branch protection on `main` requiring the two check jobs
+- [x] Branch protection on `main` requiring the two check jobs
 - [ ] First run approved and Version ID verified
