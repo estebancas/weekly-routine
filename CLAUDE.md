@@ -16,6 +16,7 @@ npm run build             # production build to dist/
 npm run preview           # serve dist/ locally (also what e2e will target on :4173)
 npm run deploy            # vite build && wrangler deploy
 npm run generate-icons    # regenerate public/*.png from public/icon.svg (pwa-assets.config.js)
+npm run lint              # ESLint (flat config) over src/, tests/, e2e/, and root config files
 npm test                  # Vitest (unit + integration) with a v8 coverage gate
 npm run test:unit         # just tests/unit
 npm run test:integration  # just tests/integration
@@ -23,7 +24,7 @@ npm run test:watch        # Vitest in watch mode
 npm run e2e               # Playwright against a production build (run `npm run build` first)
 ```
 
-There is no linter yet. `.github/workflows/ci.yml` runs build + test + e2e on every push and PR, and deploys to Cloudflare from `main` only after manual approval on the `production` GitHub environment. `CI-CD.md` documents the CI/CD setup.
+`eslint.config.js` is a flat config with `js.configs.recommended`, browser globals for `src/**`, browser+node globals for `tests/**`, and node globals for `e2e/**` and root config files. `.github/workflows/ci.yml` runs lint + build + test + e2e on every push and PR, and deploys to Cloudflare from `main` only after manual approval on the `production` GitHub environment. `CI-CD.md` documents the CI/CD setup.
 
 **Tests.** `tests/unit/**` covers each module in isolation, mirroring `src/`'s layout; `tests/integration/app.test.js` boots the real `src/main.js` in jsdom and drives it through clicks, asserting on the rendered DOM. `vitest.config.js` defines both as Vitest projects, `tests/setup.js` loads `fake-indexeddb/auto` and resets DOM/env/mocks after each test, and `tests/stubs/pwa-register.js` stands in for the `virtual:pwa-register` module Vite generates at build time. `npm test` enforces a 90% v8 coverage threshold (lines/branches/functions/statements) over `src/**/*.js`.
 
