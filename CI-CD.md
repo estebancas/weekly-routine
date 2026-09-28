@@ -2,7 +2,7 @@
 
 Goal: every push runs the pipeline (install, build, unit tests, e2e). A deploy to Cloudflare only happens on `main`, only after the pipeline is green, and only when you approve it by hand in the GitHub UI.
 
-Status: `.nvmrc`, the `lint`/`test`/`mutate`/`size`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). Unit, integration, mutation and end-to-end tests are all done (section 6); `npm test`, `npm run mutate`, `npm run size` and `npm run e2e` all run for real now, and the e2e CI job no longer skips itself. `lint`, `mutation` and `audit` jobs run in parallel with `test`; `size` runs against the `test` job's `dist` artifact. `.github/dependabot.yml` opens weekly update PRs. Of the manual steps in section 4: the GitHub repo (4.1) and branch protection for `Unit tests + build`, `End-to-end`, `Lint`, and `Mutation testing` (4.5) are done; the Cloudflare API token (4.2), the two GitHub secrets (4.3), and the `production` environment's required reviewer + branch restriction (4.4) are still pending — see the checklist in section 7.
+Status: `.nvmrc`, the `lint`/`test`/`mutate`/`size`/`e2e` scripts and `.github/workflows/ci.yml` are in the repo (section 3 and the workflow below are done). Unit, integration, mutation and end-to-end tests are all done (section 6); `npm test`, `npm run mutate`, `npm run size` and `npm run e2e` all run for real now, and the e2e CI job no longer skips itself and now runs in the pinned Playwright container. `lint`, `mutation` and `audit` jobs run in parallel with `test`; `size` runs against the `test` job's `dist` artifact. `.github/dependabot.yml` opens weekly update PRs. Of the manual steps in section 4: the GitHub repo (4.1) and branch protection for all six checks (4.5) is done; the Cloudflare API token (4.2), the two GitHub secrets (4.3), and the `production` environment's required reviewer + branch restriction (4.4) are still pending — see the checklist in section 7.
 
 ---
 
@@ -302,8 +302,6 @@ All done — Vitest unit + integration, Stryker mutation testing, and Playwright
 - [ ] Cloudflare API token created
 - [ ] `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets added
 - [ ] `production` environment with required reviewer and `main` only
-- [x] Branch protection on `main` requiring `Unit tests + build`, `End-to-end`, `Lint`, and `Mutation testing`
-- [ ] `Bundle size` added to branch protection required checks
-- [ ] `Dependency audit` added to branch protection required checks
+- [x] Branch protection on `main` requiring `Unit tests + build`, `End-to-end`, `Lint`, `Mutation testing`, `Bundle size`, and `Dependency audit`
 - [ ] `Dependabot security updates` confirmed enabled under repo Settings → Security
 - [ ] First run approved and Version ID verified
