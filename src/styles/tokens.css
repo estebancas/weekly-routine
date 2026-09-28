@@ -1,4 +1,4 @@
-/* Design tokens — the only place raw values live. Derived from desing.md (Dark Neo-Brutalist). */
+/* Design tokens — the only place raw values live. Derived from docs/design.md (Dark Neo-Brutalist). */
 :root {
   /* Color */
   --color-black: #000000;
