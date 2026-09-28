@@ -1,0 +1,42 @@
+import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import { gotoAt, dayChip, confirmarButton } from './helpers.js';
+
+const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
+
+async function expectNoViolations(page) {
+  const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+  expect(results.violations).toEqual([]);
+}
+
+test.describe('accessibility', () => {
+  test('weekday boot has no violations', async ({ page }) => {
+    await gotoAt(page, '2026-09-29T16:00:00Z'); // Tue 10:00 CR
+    await expectNoViolations(page);
+  });
+
+  test('after the stretch cutoff, with the night stretch open, has no violations', async ({ page }) => {
+    await gotoAt(page, '2026-09-29T00:30:00Z'); // Mon 18:30 CR
+    await expectNoViolations(page);
+  });
+
+  test('previewing another day, with the confirm bar docked, has no violations', async ({ page }) => {
+    await gotoAt(page, '2026-09-29T16:00:00Z');
+    await dayChip(page, 'Jueves').click();
+    await expect(confirmarButton(page)).toBeVisible();
+    await expectNoViolations(page);
+  });
+
+  test('the weekend block has no violations', async ({ page }) => {
+    await gotoAt(page, '2026-10-03T18:00:00Z'); // Sat 12:00 CR
+    await expectNoViolations(page);
+  });
+
+  test('all sections expanded has no violations', async ({ page }) => {
+    await gotoAt(page, '2026-09-29T16:00:00Z');
+    for (const summary of await page.locator('details summary').all()) {
+      await summary.click();
+    }
+    await expectNoViolations(page);
+  });
+});
