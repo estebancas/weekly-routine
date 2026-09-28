@@ -1,0 +1,5 @@
+[
+  { "name": "JS (brotli)", "path": "dist/assets/*.js", "limit": "11 KB" },
+  { "name": "CSS (brotli)", "path": "dist/assets/*.css", "limit": "2.6 KB" },
+  { "name": "Fonts (self-hosted, raw)", "path": "dist/assets/*.woff2", "limit": "57 KB", "gzip": false, "brotli": false }
+]
