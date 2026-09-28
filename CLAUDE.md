@@ -27,7 +27,9 @@ npm run e2e               # Playwright against a production build (run `npm run 
 npm run e2e:visual        # e2e/visual.spec.js only, via Docker, matching CI's environment
 ```
 
-`eslint.config.js` is a flat config with `js.configs.recommended`, browser globals for `src/**`, browser+node globals for `tests/**`, and node globals for `e2e/**` and root config files. `.github/workflows/ci.yml` runs lint + build + test + mutation testing + bundle-size + e2e on every push and PR, and deploys to Cloudflare from `main` only after manual approval on the `production` GitHub environment. `CI-CD.md` documents the CI/CD setup.
+`eslint.config.js` is a flat config with `js.configs.recommended`, browser globals for `src/**`, browser+node globals for `tests/**`, and node globals for `e2e/**` and root config files. `.github/workflows/ci.yml` runs lint + build + test + mutation testing + bundle-size + dependency audit + e2e on every push and PR, and deploys to Cloudflare from `main` only after manual approval on the `production` GitHub environment. `CI-CD.md` documents the CI/CD setup.
+
+**Dependency vulnerability scanning.** `.github/dependabot.yml` opens weekly PRs for npm and GitHub Actions updates (minor/patch grouped per ecosystem into one PR each; majors and security fixes arrive on their own). CI's `audit` job runs `npm audit --audit-level=high` (reads `package-lock.json` directly, no install needed) and, on pull requests only, `actions/dependency-review-action` with `fail-on-severity: high` against the PR's dependency diff.
 
 **Bundle size.** `.size-limit.json` budgets the built output in three groups: JS and CSS measured brotli-compressed (matching what Cloudflare actually serves), and the self-hosted `@fontsource` `.woff2` files measured raw (already compressed, so brotli/gzip barely helps and would understate their real transfer cost). Each limit is today's measured size plus ~10%. `npm run size` needs `dist/` already built; CI's `size` job downloads the `test` job's `dist` artifact rather than rebuilding.
 
