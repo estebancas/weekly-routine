@@ -17,6 +17,7 @@
     "mutate": "stryker run",
     "size": "size-limit",
     "e2e": "playwright test",
+    "e2e:visual": "docker run --rm --ipc=host -v \"$PWD\":/work -v /work/node_modules -w /work mcr.microsoft.com/playwright:v1.63.0-noble sh -c 'npm ci && npm run build && npx playwright test visual \"$@\"' -- \"$@\"",
     "postinstall": "patch-package"
   },
   "dependencies": {

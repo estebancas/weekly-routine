@@ -21,7 +21,7 @@ push / PR ─► lint ───────────────────�
 - **test**: `npm ci`, `npm run build`, `npm test`. Fails the run on any error.
 - **mutation testing**: runs in parallel with `test`, no `needs`. `npm ci`, `npm run mutate`. Uploads `reports/mutation` as an artifact even on failure.
 - **size**: depends on `test`. Downloads its `dist` artifact, runs `npm run size` against the budgets in `.size-limit.json`.
-- **e2e**: depends on `test`. Builds, serves `dist/` with `vite preview`, runs Playwright against it. Skipped automatically until a `playwright.config.*` file exists.
+- **e2e**: depends on `test`. Runs inside the `mcr.microsoft.com/playwright:v1.63.0-noble` container (pinned to the installed `@playwright/test` version) so the visual-regression baselines committed from that same image render identically. Serves `dist/` with `vite preview`, runs Playwright against it. Skipped automatically until a `playwright.config.*` file exists.
 - **deploy**: depends on both. Runs only for `main` (push or manual dispatch). Bound to a GitHub *environment* named `production` that has you as a required reviewer. The job pauses at "Waiting for review" until you approve it. That approval is the manual trigger.
 
 Why an environment gate instead of a separate deploy workflow: GitHub records who approved, when, and which commit shipped, and the deploy job cannot run unless the earlier jobs in the same run passed. Re-deploying an older commit is still possible via "Run workflow" on that ref.
@@ -118,6 +118,8 @@ jobs:
     name: End-to-end
     runs-on: ubuntu-latest
     needs: test
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
     steps:
       - uses: actions/checkout@v7
       - name: Check for Playwright config
@@ -133,8 +135,6 @@ jobs:
           cache: npm
       - if: steps.has-e2e.outputs.present == 'true'
         run: npm ci
-      - if: steps.has-e2e.outputs.present == 'true'
-        run: npx playwright install --with-deps chromium
       - if: steps.has-e2e.outputs.present == 'true'
         uses: actions/download-artifact@v8
         with:
@@ -271,6 +271,7 @@ All done — Vitest unit + integration, Stryker mutation testing, and Playwright
 - **Mutation testing** (`stryker.config.json`, `npm run mutate`): checks that the coverage above has real assertions behind it, not just executed lines. Runs against `vitest.stryker.config.js` (a flat Vitest config Stryker needs) with a `thresholds.break` of 85 (baseline ~90%). Needs a locally-applied `patch-package` fix for an upstream Vitest 5 incompatibility — see `CLAUDE.md`'s Mutation testing note.
 - **Bundle size** (`.size-limit.json`, `npm run size`): budgets the built JS/CSS (brotli) and self-hosted fonts (raw) in `dist/`, each ~10% above the measured baseline. Runs against the `test` job's `dist` artifact, no rebuild.
 - **End-to-end** (`e2e/**`, `@playwright/test`, config at `playwright.config.js`): a real Chromium against `vite preview` on `:4173`, covering what jsdom can't — boot on today's weekday with the correct section open for the time; preview/Volver/confirm/reload flows including a stale override being dropped; Saturday and Sunday rendering the weekend block; the manifest response; an active service worker; and a page reload while offline after the first visit. `npm run e2e` is what CI's `e2e` job runs, against the `dist` the `test` job already built (locally, run `npm run build` first). `page.clock.setFixedTime(...)` fakes the wall clock (the dev-only `?now=` override doesn't exist in production builds).
+- **Visual regression** (`e2e/visual.spec.js`, part of `npm run e2e`): screenshots four states at a phone and a desktop viewport. Linux-only (font rendering differs by OS), so it's skipped locally on macOS; `npm run e2e:visual` runs it through the same `mcr.microsoft.com/playwright:v1.63.0-noble` image CI uses. See `CLAUDE.md`'s Visual regression note for how to update baselines.
 
 ---
 

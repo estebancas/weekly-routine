@@ -83,6 +83,11 @@ jobs:
     name: End-to-end
     runs-on: ubuntu-latest
     needs: test
+    # Pinned to the installed @playwright/test version so the container's preinstalled
+    # browsers and fonts match `npm ci`'s resolved version, and so visual regression
+    # baselines (committed from the same image, see CLAUDE.md) render identically.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
     steps:
       - uses: actions/checkout@v7
       - name: Check for Playwright config
@@ -102,8 +107,6 @@ jobs:
           cache: npm
       - if: steps.has-e2e.outputs.present == 'true'
         run: npm ci
-      - if: steps.has-e2e.outputs.present == 'true'
-        run: npx playwright install --with-deps chromium
       - if: steps.has-e2e.outputs.present == 'true'
         uses: actions/download-artifact@v8
         with:
