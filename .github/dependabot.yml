@@ -4,16 +4,40 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Let brand-new releases age a few days (yanks, hijacked publishes) before a PR opens.
+    # Security updates are not delayed by this.
+    cooldown:
+      default-days: 3
     groups:
       npm-minor-patch:
         update-types:
           - minor
           - patch
+    # Majors of the fragile toolchain are upgraded by hand: they are coupled to the pinned
+    # Playwright image tag (ci.yml, package.json e2e:visual), the Stryker patch-package
+    # patch, and the deploy path. Other majors still arrive as their own PR.
+    ignore:
+      - dependency-name: "@playwright/test"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@vitest/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@stryker-mutator/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vite-plugin-pwa"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "wrangler"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 3
     groups:
       actions-minor-patch:
         update-types:

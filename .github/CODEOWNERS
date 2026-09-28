@@ -1,0 +1,7 @@
+# Files where a bad or malicious change does the most damage: dependencies, CI, patches, budgets.
+/package.json           @estebancas
+/package-lock.json      @estebancas
+/.github/               @estebancas
+/patches/               @estebancas
+/stryker.config.json    @estebancas
+/.size-limit.json       @estebancas

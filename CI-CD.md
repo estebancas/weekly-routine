@@ -18,10 +18,10 @@ push / PR ─► lint ───────────────────�
                                                                   only on main
 ```
 
-- **lint**: `npm ci`, `npm run lint`. Runs in parallel with `test`, no `needs`.
+- **lint**: `npm ci`, `npm run lint`, then regenerates the PWA icons and fails if they are missing or differ from the committed ones (`generate-icons` is otherwise exercised by nothing, so a bad dev-tool bump would pass every other check). Runs in parallel with `test`, no `needs`.
 - **test**: `npm ci`, `npm run build`, `npm test`. Fails the run on any error.
 - **mutation testing**: runs in parallel with `test`, no `needs`. `npm ci`, `npm run mutate`. Uploads `reports/mutation` as an artifact even on failure.
-- **dependency audit**: runs in parallel with `test`, no `needs`. `npm audit --audit-level=high` (reads `package-lock.json`, no install needed), plus `actions/dependency-review-action` on pull requests only, checking the PR's dependency diff.
+- **dependency audit**: runs in parallel with `test`, no `needs`. `npm audit --audit-level=high` (reads `package-lock.json`, no install needed), then `npm ci` + `npm audit signatures` (verifies registry signatures and provenance of the installed packages), plus `actions/dependency-review-action` on pull requests only, checking the PR's dependency diff.
 - **size**: depends on `test`. Downloads its `dist` artifact, runs `npm run size` against the budgets in `.size-limit.json`.
 - **e2e**: depends on `test`. Runs inside the `mcr.microsoft.com/playwright:v1.63.0-noble` container (pinned to the installed `@playwright/test` version) so the visual-regression baselines committed from that same image render identically. Serves `dist/` with `vite preview`, runs Playwright against it. Skipped automatically until a `playwright.config.*` file exists.
 - **deploy**: depends on both. Runs only for `main` (push or manual dispatch). Bound to a GitHub *environment* named `production` that has you as a required reviewer. The job pauses at "Waiting for review" until you approve it. That approval is the manual trigger.
@@ -55,27 +55,37 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run lint
+      # generate-icons is otherwise unexercised by CI, so a bad dev-tool bump (e.g. an
+      # ESM-only major) would pass every other check. Regenerate and compare to the
+      # committed icons.
+      - name: Icons regenerate cleanly
+        run: |
+          npm run generate-icons
+          for f in pwa-64x64.png pwa-192x192.png pwa-512x512.png maskable-icon-512x512.png apple-touch-icon-180x180.png favicon.ico; do
+            test -s "public/$f" || { echo "missing or empty: public/$f"; exit 1; }
+          done
+          git diff --exit-code -- public/
 
   test:
     name: Unit tests + build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run build
       - run: npm test
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: dist
           path: dist
@@ -85,15 +95,15 @@ jobs:
     name: Mutation testing
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run mutate
       - if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: mutation-report
           path: reports/mutation
@@ -103,14 +113,16 @@ jobs:
     name: Dependency audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm audit --audit-level=high
+      - run: npm ci
+      - run: npm audit signatures
       - if: github.event_name == 'pull_request'
-        uses: actions/dependency-review-action@v5
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5
         with:
           fail-on-severity: high
 
@@ -119,13 +131,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: dist
           path: dist
@@ -135,32 +147,39 @@ jobs:
     name: End-to-end
     runs-on: ubuntu-latest
     needs: test
+    # Pinned to the installed @playwright/test version so the container's preinstalled
+    # browsers and fonts match `npm ci`'s resolved version, and so visual regression
+    # baselines (committed from the same image, see CLAUDE.md) render identically.
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Check for Playwright config
         id: has-e2e
         run: |
-          if ls playwright.config.* >/dev/null 2>&1; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; fi
+          if ls playwright.config.* >/dev/null 2>&1; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
       - if: steps.has-e2e.outputs.present == 'false'
         run: echo "No playwright.config found, skipping e2e."
       - if: steps.has-e2e.outputs.present == 'true'
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - if: steps.has-e2e.outputs.present == 'true'
         run: npm ci
       - if: steps.has-e2e.outputs.present == 'true'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: dist
           path: dist
       - if: steps.has-e2e.outputs.present == 'true'
         run: npm run e2e
       - if: always() && steps.has-e2e.outputs.present == 'true'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-report
           path: playwright-report
@@ -175,15 +194,15 @@ jobs:
       name: production
       url: https://weekly-routine.estcascor94.workers.dev
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run build
       - name: wrangler deploy
-        uses: cloudflare/wrangler-action@v4
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -192,7 +211,8 @@ jobs:
 
 Notes:
 - The deploy job rebuilds instead of reusing the artifact so the deployed bundle always comes from the exact checked-out commit.
-- `cloudflare/wrangler-action@v4` uses the `wrangler` version from `package.json`, so CI and local deploys match.
+- `cloudflare/wrangler-action` uses the `wrangler` version from `package.json`, so CI and local deploys match.
+- Every third-party Action is pinned to a commit SHA with the version in a trailing comment, and the repo setting `sha_pinning_required` rejects any unpinned `uses:`. Dependabot's `github-actions` ecosystem keeps the pins current; to pin a new action by hand, resolve it with `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha`.
 - Check the action's current major version on its GitHub page before first use.
 
 ---
@@ -250,7 +270,7 @@ Save. From now on the `deploy` job stops at "Waiting for review" and does nothin
 
 Repo → **Settings** → **Branches** → **Add rule** for `main`:
 - Require status checks to pass: select `Unit tests + build`, `End-to-end`, and any other job added later (`Lint`, `Mutation testing`, `Bundle size`, `Dependency audit`) once it has run at least once on the default branch.
-- Optionally require a pull request before merging.
+- Require a pull request before merging, with 0 required approvals (so you can still merge your own and Dependabot PRs). `.github/CODEOWNERS` lists the sensitive paths (dependency files, `.github/`, `patches/`, tool configs).
 
 This keeps a broken commit from ever reaching the point where you could approve a deploy.
 
@@ -303,5 +323,7 @@ All done — Vitest unit + integration, Stryker mutation testing, and Playwright
 - [ ] `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets added
 - [ ] `production` environment with required reviewer and `main` only
 - [x] Branch protection on `main` requiring `Unit tests + build`, `End-to-end`, `Lint`, `Mutation testing`, `Bundle size`, and `Dependency audit`
+- [x] Actions setting `sha_pinning_required` on, all `uses:` pinned to commit SHAs
+- [x] Branch protection requires a pull request (0 approvals) and `.github/CODEOWNERS` exists
 - [ ] `Dependabot security updates` confirmed enabled under repo Settings → Security
 - [ ] First run approved and Version ID verified
