@@ -17,6 +17,10 @@ updates:
     # Playwright image tag (ci.yml, package.json e2e:visual), the Stryker patch-package
     # patch, and the deploy path. Other majors still arrive as their own PR.
     ignore:
+      # Peer of vite-plugin-pwa (declares ^1.0.0): a 2.x bump makes `npm install` fail with
+      # ERESOLVE while `npm ci` still passes. Revisit when vite-plugin-pwa widens its range.
+      - dependency-name: "@vite-pwa/assets-generator"
+        update-types: ["version-update:semver-major"]
       - dependency-name: "@playwright/test"
         update-types: ["version-update:semver-major"]
       - dependency-name: "vitest"
