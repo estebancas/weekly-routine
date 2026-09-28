@@ -27,7 +27,7 @@ npm run e2e               # Playwright against a production build (run `npm run 
 npm run e2e:visual        # e2e/visual.spec.js only, via Docker, matching CI's environment
 ```
 
-`eslint.config.js` is a flat config with `js.configs.recommended`, browser globals for `src/**`, browser+node globals for `tests/**`, and node globals for `e2e/**` and root config files. `.github/workflows/ci.yml` runs lint + build + test + mutation testing + bundle-size + dependency audit + e2e on every push and PR, and deploys to Cloudflare from `main` only after manual approval on the `production` GitHub environment. `CI-CD.md` documents the CI/CD setup.
+`eslint.config.js` is a flat config with `js.configs.recommended`, browser globals for `src/**`, browser+node globals for `tests/**`, and node globals for `e2e/**` and root config files. `.github/workflows/ci.yml` runs lint + build + test + mutation testing + bundle-size + dependency audit + e2e on every push and PR, and deploys to Cloudflare from `main` only after manual approval on the `production` GitHub environment.
 
 **Dependency vulnerability scanning.** `.github/dependabot.yml` opens weekly PRs for npm and GitHub Actions updates (minor/patch grouped per ecosystem into one PR each; majors and security fixes arrive on their own). CI's `audit` job runs `npm audit --audit-level=high` (reads `package-lock.json` directly, no install needed), `npm audit signatures` (after `npm ci`; verifies registry signatures and provenance) and, on pull requests only, `actions/dependency-review-action` with `fail-on-severity: high` against the PR's dependency diff.
 
@@ -77,7 +77,7 @@ Which section opens by default is time-based: before `STRETCH_CUTOFF` (18:30 CR)
 
 ### Styling and UI
 
-- `src/styles/tokens.css` is the only place raw design values live (colors, borders, hard shadows, type scale, spacing, motifs). Everything else references `var(--…)`. The design brief is `desing.md` (dark neo-brutalist: white 2–4px borders, zero radius, solid offset shadows, orange `#ff5500` and acid green `#c4f000` accents, no gradients/blur).
+- `src/styles/tokens.css` is the only place raw design values live (colors, borders, hard shadows, type scale, spacing, motifs). Everything else references `var(--…)`. The design brief is `docs/design.md` (dark neo-brutalist: white 2–4px borders, zero radius, solid offset shadows, orange `#ff5500` and acid green `#c4f000` accents, no gradients/blur).
 - `src/ui/primitives/` holds reusable elements (`Button`, `Chip`, `Tag`, `Panel`, `Details`, `Input`). Each is a `Name.js` + `Name.css` pair; the JS imports its own CSS and is re-exported from `primitives/index.js`. Add new primitives following that convention.
 - `src/ui/*.js` (hero, dayStrip, sections, items, confirmBar) are page-specific renderers that compose primitives. Page-level layout lives in `src/styles/layout.css`.
 - All UI is plain DOM (`document.createElement`), no templating or JSX.
