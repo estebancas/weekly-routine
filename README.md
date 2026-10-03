@@ -40,7 +40,7 @@ The routine lives in [`src/data/routine.json`](src/data/routine.json), Monday to
 | `npm run build` | Production build to `dist/` |
 | `npm run preview` | Serve `dist/` locally on `:4173` |
 | `npm run deploy` | Build and `wrangler deploy` |
-| `npm run generate-icons` | Regenerate `public/*.png` from `public/icon.svg` |
+| `npm run generate-icons` | Regenerate `public/*.png` (icons and iOS splash screens) from `public/icon.svg` |
 | `npm run lint` | ESLint |
 | `npm test` | Vitest (unit + integration) with a 90% coverage gate |
 | `npm run mutate` | Stryker mutation testing (break threshold 85) |
