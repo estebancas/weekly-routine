@@ -27,14 +27,16 @@ jobs:
       - run: npm run lint
       # generate-icons is otherwise unexercised by CI, so a bad dev-tool bump (e.g. an
       # ESM-only major) would pass every other check. Regenerate and compare to the
-      # committed icons.
+      # committed icons and iOS splash images.
       - name: Icons regenerate cleanly
         run: |
           npm run generate-icons
           for f in pwa-64x64.png pwa-192x192.png pwa-512x512.png maskable-icon-512x512.png apple-touch-icon-180x180.png favicon.ico; do
             test -s "public/$f" || { echo "missing or empty: public/$f"; exit 1; }
           done
-          git diff --exit-code -- public/
+          ls public/apple-splash-*.png >/dev/null || { echo "missing iOS splash images"; exit 1; }
+          # --porcelain also catches untracked files (e.g. a splash size added upstream).
+          test -z "$(git status --porcelain -- public/)" || { git status --short -- public/; git diff -- public/; exit 1; }
 
   test:
     name: Unit tests + build
