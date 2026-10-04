@@ -8,7 +8,7 @@ export default defineConfig({
     ...minimal2023Preset,
     transparent: { ...minimal2023Preset.transparent, padding: 0, resizeOptions: { background } },
     maskable: { ...minimal2023Preset.maskable, resizeOptions: { background } },
-    apple: { ...minimal2023Preset.apple, padding: 0.05, resizeOptions: { background } },
+    apple: { ...minimal2023Preset.apple, padding: 0, resizeOptions: { background } },
     // iOS startup images for every device the generator knows. The app is dark-only, so
     // there is a single variant (no darkResizeOptions) on the manifest background colour.
     appleSplashScreens: createAppleSplashScreens({
