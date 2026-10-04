@@ -82,6 +82,9 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm audit --omit=dev --audit-level=high
+      - name: Audit dev dependencies (non-blocking)
+        run: npm audit --audit-level=high
+        continue-on-error: true
       - run: npm ci
       - run: npm audit signatures
       - if: github.event_name == 'pull_request'
