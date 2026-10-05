@@ -14,144 +14,56 @@ permissions:
   contents: read
 
 jobs:
+  # CI logic lives in estebancas/standards (reusable workflows). The job `name` values and the
+  # reusable job ids form the required status check contexts (for example `Lint / lint`); see
+  # docs/contract.md in that repo before renaming either.
   lint:
     name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run lint
-      # generate-icons is otherwise unexercised by CI, so a bad dev-tool bump (e.g. an
-      # ESM-only major) would pass every other check. Regenerate and compare to the
-      # committed icons and iOS splash images.
-      - name: Icons regenerate cleanly
-        run: |
-          npm run generate-icons
-          for f in pwa-64x64.png pwa-192x192.png pwa-512x512.png maskable-icon-512x512.png apple-touch-icon-180x180.png favicon.ico; do
-            test -s "public/$f" || { echo "missing or empty: public/$f"; exit 1; }
-          done
-          ls public/apple-splash-*.png >/dev/null || { echo "missing iOS splash images"; exit 1; }
-          # --porcelain also catches untracked files (e.g. a splash size added upstream).
-          test -z "$(git status --porcelain -- public/)" || { git status --short -- public/; git diff -- public/; exit 1; }
+    uses: estebancas/standards/.github/workflows/lint.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
+    with:
+      # generate-icons is otherwise unexercised by CI, so a bad dev-tool bump (e.g. an ESM-only
+      # major) would pass every other check. Regenerate and compare to the committed icons and
+      # iOS splash images.
+      generated-assets-command: npm run generate-icons
+      generated-assets-path: public/
+      generated-assets-required-files: |
+        public/pwa-64x64.png
+        public/pwa-192x192.png
+        public/pwa-512x512.png
+        public/maskable-icon-512x512.png
+        public/apple-touch-icon-180x180.png
+        public/favicon.ico
+        public/apple-splash-*.png
 
   test:
     name: Unit tests + build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run build
-      - run: npm test
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: dist
-          path: dist
-          retention-days: 7
+    uses: estebancas/standards/.github/workflows/test-build.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
 
   mutation:
     name: Mutation testing
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run mutate
-      - if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: mutation-report
-          path: reports/mutation
-          retention-days: 7
+    uses: estebancas/standards/.github/workflows/mutation.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
 
   audit:
     name: Dependency audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm audit --omit=dev --audit-level=high
-      - name: Audit dev dependencies (non-blocking)
-        run: npm audit --audit-level=high
-        continue-on-error: true
-      - run: npm ci
-      - run: npm audit signatures
-      - if: github.event_name == 'pull_request'
-        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5
-        with:
-          fail-on-severity: high
+    uses: estebancas/standards/.github/workflows/audit.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
+    with:
+      # `braces` has no fix yet (see CLAUDE.md); drop this once the full audit is clean.
+      audit-dev: true
 
   size:
     name: Bundle size
-    runs-on: ubuntu-latest
     needs: test
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: dist
-          path: dist
-      - run: npm run size
+    uses: estebancas/standards/.github/workflows/size.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
 
   e2e:
     name: End-to-end
-    runs-on: ubuntu-latest
     needs: test
-    # Pinned to the installed @playwright/test version so the container's preinstalled
-    # browsers and fonts match `npm ci`'s resolved version, and so visual regression
-    # baselines (committed from the same image, see CLAUDE.md) render identically.
-    container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - name: Check for Playwright config
-        id: has-e2e
-        run: |
-          if ls playwright.config.* >/dev/null 2>&1; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-          fi
-      - if: steps.has-e2e.outputs.present == 'false'
-        run: echo "No playwright.config found, skipping e2e."
-      - if: steps.has-e2e.outputs.present == 'true'
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - if: steps.has-e2e.outputs.present == 'true'
-        run: npm ci
-      - if: steps.has-e2e.outputs.present == 'true'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: dist
-          path: dist
-      - if: steps.has-e2e.outputs.present == 'true'
-        run: npm run e2e
-      - if: always() && steps.has-e2e.outputs.present == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: playwright-report
-          path: playwright-report
-          retention-days: 7
+    uses: estebancas/standards/.github/workflows/e2e.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
+    with:
+      # Pinned to the installed @playwright/test version so the container's preinstalled
+      # browsers and fonts match `npm ci`'s resolved version, and so visual regression
+      # baselines (committed from the same image, see CLAUDE.md) render identically.
+      container-image: mcr.microsoft.com/playwright:v1.63.0-noble
 
   deploy:
     name: Deploy to Cloudflare
