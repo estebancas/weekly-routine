@@ -66,7 +66,7 @@ docs/             design brief
 
 ## CI/CD
 
-`.github/workflows/ci.yml` runs lint, build, tests, mutation testing, bundle size, dependency audit and e2e on every push and PR. Deploys to Cloudflare run from `main` only, after manual approval on the `production` GitHub environment. Dependabot opens weekly update PRs.
+`.github/workflows/ci.yml` calls the shared workflows in [`estebancas/standards`](https://github.com/estebancas/standards) to run lint, build, tests, mutation testing, bundle size, dependency audit and e2e on every push and PR. Deploys to Cloudflare run from `main` only, after manual approval on the `production` GitHub environment. Dependabot opens weekly update PRs.
 
 ## Contributing
 
