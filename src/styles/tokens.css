@@ -50,6 +50,14 @@
   --space-6: 40px;
   --space-7: 64px;
 
+  /* Motion — fast and hard: short durations, linear or steps(), never soft easing.
+     prefers-reduced-motion zeroes the durations below, killing every animation/transition. */
+  --motion-press: 70ms;
+  --motion-swap: 140ms;
+  --motion-dock: 180ms;
+  --ease-hard: linear;
+  --ease-chunky: steps(3, jump-end);
+
   /* Motifs */
   --stripe-hazard: repeating-linear-gradient(45deg, var(--color-accent) 0 8px, var(--color-black) 8px 16px);
   --stripe-hazard-2: repeating-linear-gradient(45deg, var(--color-accent-2) 0 8px, var(--color-black) 8px 16px);
@@ -63,4 +71,12 @@
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-press: 0ms;
+    --motion-swap: 0ms;
+    --motion-dock: 0ms;
+  }
 }

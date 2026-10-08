@@ -14,6 +14,7 @@
   text-transform: uppercase;
   cursor: pointer;
   user-select: none;
+  transition: transform var(--motion-press) var(--ease-hard);
 }
 
 .chip__label {

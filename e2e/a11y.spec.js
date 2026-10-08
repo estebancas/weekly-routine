@@ -5,6 +5,9 @@ import { gotoAt, dayChip, confirmarButton } from './helpers.js';
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 async function expectNoViolations(page) {
+  // Let entrance animations (layout.css) settle first: axe samples computed colors, and a
+  // mid-fade frame reads as a contrast violation that the settled page does not have.
+  await page.evaluate(() => Promise.all(globalThis.document.getAnimations().map((a) => a.finished)));
   const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
   expect(results.violations).toEqual([]);
 }

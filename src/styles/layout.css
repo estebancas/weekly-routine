@@ -1,5 +1,29 @@
 /* App shell and page-level layout. Reusable pieces live in ui/primitives. */
 
+/* Entrance animations. Renders rebuild the DOM, so main.js (motionPlan) adds these
+   classes only when the render should animate. Both end at the identity state, keeping
+   visual-regression baselines stable. */
+.anim-swap {
+  animation: swap-in var(--motion-swap) var(--ease-chunky) both;
+}
+
+@keyframes swap-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
+
+.confirm-dock--enter .confirm {
+  animation: dock-in var(--motion-dock) var(--ease-hard) both;
+}
+
+@keyframes dock-in {
+  from {
+    transform: translateY(calc(100% + var(--safe-bottom) + var(--space-4)));
+  }
+}
+
 .app {
   max-width: var(--content-max);
   margin: 0 auto;
