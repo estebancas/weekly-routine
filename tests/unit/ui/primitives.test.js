@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { Button, Chip, Tag, Panel, Details, Input } from '../../../src/ui/primitives/index.js';
+import { Button, Chip, Tag, Panel, Details, Input, IconButton } from '../../../src/ui/primitives/index.js';
 import * as primitives from '../../../src/ui/primitives/index.js';
 import { Button as ButtonDirect } from '../../../src/ui/primitives/Button.js';
 import { Chip as ChipDirect } from '../../../src/ui/primitives/Chip.js';
@@ -7,6 +7,7 @@ import { Tag as TagDirect } from '../../../src/ui/primitives/Tag.js';
 import { Panel as PanelDirect } from '../../../src/ui/primitives/Panel.js';
 import { Details as DetailsDirect } from '../../../src/ui/primitives/Details.js';
 import { Input as InputDirect } from '../../../src/ui/primitives/Input.js';
+import { IconButton as IconButtonDirect } from '../../../src/ui/primitives/IconButton.js';
 
 describe('primitives/index.js re-exports', () => {
   it('re-exports the same function objects as each module', () => {
@@ -16,6 +17,7 @@ describe('primitives/index.js re-exports', () => {
     expect(primitives.Panel).toBe(PanelDirect);
     expect(primitives.Details).toBe(DetailsDirect);
     expect(primitives.Input).toBe(InputDirect);
+    expect(primitives.IconButton).toBe(IconButtonDirect);
   });
 });
 
@@ -190,5 +192,36 @@ describe('Input', () => {
     el.value = 'hello';
     el.dispatchEvent(new Event('input'));
     expect(onInput).toHaveBeenCalledExactlyOnceWith('hello', expect.any(Event));
+  });
+});
+
+describe('IconButton', () => {
+  const icon = () => document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
+  it('renders a <button type=button> by default with an aria-label and the icon', () => {
+    const svg = icon();
+    const el = IconButton({ icon: svg, ariaLabel: 'Copiar' });
+    expect(el.tagName).toBe('BUTTON');
+    expect(el.type).toBe('button');
+    expect(el.className).toBe('icon-btn icon-btn--secondary');
+    expect(el.getAttribute('aria-label')).toBe('Copiar');
+    expect(el.firstChild).toBe(svg);
+  });
+
+  it('renders an external <a> when given an href', () => {
+    const el = IconButton({ icon: icon(), ariaLabel: 'Buscar', variant: 'primary', href: 'https://x.test/?q=a' });
+    expect(el.tagName).toBe('A');
+    expect(el.className).toBe('icon-btn icon-btn--primary');
+    expect(el.getAttribute('href')).toBe('https://x.test/?q=a');
+    expect(el.target).toBe('_blank');
+    expect(el.rel).toBe('noopener noreferrer');
+  });
+
+  it('attaches the click handler only when one is given', () => {
+    const onClick = vi.fn();
+    const el = IconButton({ icon: icon(), ariaLabel: 'x', onClick });
+    el.click();
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(() => IconButton({ icon: icon(), ariaLabel: 'x' }).click()).not.toThrow();
   });
 });

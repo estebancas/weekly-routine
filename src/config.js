@@ -36,4 +36,12 @@ export const LABELS = {
   back: 'Volver',
   superset: 'Superserie',
   pickDay: (dayName) => `Ver rutina de ${dayName}`,
+  searchVideo: (name) => `Buscar video de ${name}`,
+  copyName: (name) => `Copiar nombre de ${name}`,
+  copied: 'Copiado',
 };
+
+/** Wait this long after launching the YouTube app on iOS before falling back to the web page. */
+export const YOUTUBE_FALLBACK_MS = 1500;
+/** How long the copy button shows its "copied" check before reverting. */
+export const COPY_FEEDBACK_MS = 2000;

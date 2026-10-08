@@ -55,4 +55,10 @@ describe('config', () => {
   it('LABELS.pickDay interpolates the day name', () => {
     expect(LABELS.pickDay('Lunes')).toBe('Ver rutina de Lunes');
   });
+
+  it('LABELS.searchVideo and LABELS.copyName name the exercise', () => {
+    expect(LABELS.searchVideo('Sentadilla')).toBe('Buscar video de Sentadilla');
+    expect(LABELS.copyName('Sentadilla')).toBe('Copiar nombre de Sentadilla');
+    expect(LABELS.copied).toBe('Copiado');
+  });
 });
