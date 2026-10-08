@@ -7,8 +7,9 @@ import { renderItem, renderExerciseGroup, renderWeekend } from './items.js';
  * @param {object} o.routine
  * @param {Record<string, boolean>} o.openSections
  * @param {(key: string, open: boolean) => void} o.onToggle
+ * @param {(name: string, timer: object) => void} [o.onTimer]
  */
-export function renderSections({ routine, openSections, onToggle }) {
+export function renderSections({ routine, openSections, onToggle, onTimer }) {
   const el = document.createElement('div');
   el.className = 'sections';
 
@@ -22,7 +23,7 @@ export function renderSections({ routine, openSections, onToggle }) {
     const list = document.createElement('div');
     list.className = 'items';
     for (const entry of entries) {
-      list.append(section.key === 'exercises' ? renderExerciseGroup(entry) : renderItem(entry));
+      list.append(section.key === 'exercises' ? renderExerciseGroup(entry, onTimer) : renderItem(entry, onTimer));
     }
     const count = section.key === 'exercises' ? entries.reduce((n, g) => n + g.items.length, 0) : entries.length;
 

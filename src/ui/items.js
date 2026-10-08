@@ -1,5 +1,6 @@
 import { LABELS, COPY_FEEDBACK_MS } from '../config.js';
 import { detectPlatform, youtubeAppUrl, youtubeWebUrl, openOnIos } from '../youtube.js';
+import { parseDuration } from '../timer/parse.js';
 import { icon } from './icons.js';
 import { IconButton, Tag } from './primitives/index.js';
 
@@ -64,22 +65,32 @@ function copyButton(name, live) {
   return btn;
 }
 
-/** Item name with its search-video and copy-name buttons on the right. */
-function renderNameRow(name) {
+function timerButton(item, onTimer) {
+  return IconButton({
+    icon: icon('timer'),
+    ariaLabel: LABELS.startTimer(item.name),
+    onClick: () => onTimer(item.name, parseDuration(item.setsReps, item.extra)),
+  });
+}
+
+/** Item name with its search-video, copy-name and (when `onTimer` is given) timer buttons on the right. */
+function renderNameRow(item, onTimer) {
   const row = el('div', 'item__title-row');
   const actions = el('div', 'item__actions');
   const live = el('span', 'u-sr-only');
   live.setAttribute('aria-live', 'polite');
-  actions.append(searchLink(name), copyButton(name, live), live);
-  row.append(el('h3', 'item__name', name), actions);
+  actions.append(searchLink(item.name), copyButton(item.name, live));
+  if (onTimer) actions.append(timerButton(item, onTimer));
+  actions.append(live);
+  row.append(el('h3', 'item__name', item.name), actions);
   return row;
 }
 
 /** Mobility or stretch item. */
-export function renderItem(item) {
+export function renderItem(item, onTimer) {
   const art = el('article', 'item');
   const head = el('header', 'item__head');
-  head.append(renderNameRow(item.name));
+  head.append(renderNameRow(item, onTimer));
   if (item.setsReps) head.append(el('span', 'item__reps', item.setsReps));
   art.append(head);
   if (item.description) art.append(el('p', 'item__desc', item.description));
@@ -88,11 +99,11 @@ export function renderItem(item) {
   return art;
 }
 
-function renderExercise(item) {
+function renderExercise(item, onTimer) {
   const art = el('article', 'exercise');
   art.append(el('div', 'exercise__letter', item.group));
   const body = el('div', 'exercise__body');
-  body.append(renderNameRow(item.name));
+  body.append(renderNameRow(item, onTimer));
   if (item.setsReps) body.append(el('span', 'item__reps', item.setsReps));
   const notes = renderNotes(item.extra);
   if (notes) body.append(notes);
@@ -101,8 +112,8 @@ function renderExercise(item) {
 }
 
 /** Exercise group from groupSupersets(): a single exercise or a superset container. */
-export function renderExerciseGroup(group) {
-  if (!group.superset) return renderExercise(group.items[0]);
+export function renderExerciseGroup(group, onTimer) {
+  if (!group.superset) return renderExercise(group.items[0], onTimer);
 
   const wrap = el('div', 'superset');
   const head = el('div', 'superset__head');
@@ -111,7 +122,7 @@ export function renderExerciseGroup(group) {
 
   group.items.forEach((item, i) => {
     if (i > 0) wrap.append(el('div', 'superset__divider'));
-    wrap.append(renderExercise(item));
+    wrap.append(renderExercise(item, onTimer));
   });
   return wrap;
 }
