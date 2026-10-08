@@ -1,0 +1,34 @@
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  padding: 0;
+  border: var(--border-w) solid var(--color-fg);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  box-shadow: var(--shadow-hard);
+  cursor: pointer;
+  transition:
+    transform var(--motion-press) var(--ease-hard),
+    box-shadow var(--motion-press) var(--ease-hard);
+}
+
+.icon-btn--primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-fg-inverse);
+}
+
+.icon-btn:active {
+  transform: translate(var(--shadow-offset), var(--shadow-offset));
+  box-shadow: none;
+}
+
+.icon-btn--done {
+  background: var(--color-accent-2);
+  border-color: var(--color-accent-2);
+  color: var(--color-fg-inverse);
+}

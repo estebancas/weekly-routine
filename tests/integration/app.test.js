@@ -297,6 +297,38 @@ describe('open-section state (patch vs. set)', () => {
   });
 });
 
+describe('exercise name actions', () => {
+  it('copying a name hits the clipboard and keeps the open section node (no re-render)', async () => {
+    const writeText = vi.fn().mockResolvedValue();
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    await bootApp({ now: '2026-09-29T16:00:00Z' });
+    const exercises = detailsList()[1];
+    await toggleDetails(exercises);
+
+    const name = exercises.querySelector('.item__name').textContent;
+    const copy = exercises.querySelector('.item__actions button');
+    copy.click();
+    await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith(name));
+    await vi.waitFor(() => expect(copy.classList.contains('icon-btn--done')).toBe(true));
+
+    expect(document.querySelectorAll('details')[1]).toBe(exercises);
+    expect(exercises.open).toBe(true);
+    expect(copy.isConnected).toBe(true);
+  });
+
+  it('every named item links to a YouTube search for its own name', async () => {
+    await bootApp({ now: '2026-09-29T16:00:00Z' });
+    for (const d of detailsList()) await toggleDetails(d);
+    const rows = [...document.querySelectorAll('.item__title-row')];
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const href = new URL(row.querySelector('a').href);
+      expect(href.hostname).toBe('www.youtube.com');
+      expect(href.searchParams.get('search_query')).toBe(row.querySelector('.item__name').textContent);
+    }
+  });
+});
+
 describe('storage unavailable', () => {
   it('still boots on today and lets the user confirm a day in memory', async () => {
     globalThis.indexedDB = new IDBFactory();

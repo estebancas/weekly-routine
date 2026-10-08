@@ -77,6 +77,10 @@ Which section opens by default is time-based: before `STRETCH_CUTOFF` (18:30 CR)
 
 `src/config.js` is the single place for the timezone, the stretch cutoff, day names/order, weekend definitions, section list, and all UI labels. Change behaviour or copy there rather than in components.
 
+### Exercise name actions
+
+Every item name (`renderNameRow` in `src/ui/items.js`) carries a search-video link and a copy button. `src/youtube.js` picks the link per platform: Android gets an `intent://` URL (opens the YouTube app, falls back to the web page), iOS a `youtube://` scheme launched from a click handler with a timed web fallback (`YOUTUBE_FALLBACK_MS`), everything else the plain web search. Copy feedback mutates the button directly (never `state.set()`).
+
 ### Styling and UI
 
 - `src/styles/tokens.css` is the only place raw design values live (colors, borders, hard shadows, type scale, spacing, motifs). Everything else references `var(--…)`. The design brief is `docs/design.md` (dark neo-brutalist: white 2–4px borders, zero radius, solid offset shadows, orange `#ff5500` and acid green `#c4f000` accents, no gradients/blur).
