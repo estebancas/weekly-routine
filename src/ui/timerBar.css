@@ -1,0 +1,82 @@
+/* Above the confirm dock (z-index 10) */
+.timer-dock {
+  z-index: 11;
+}
+
+/* Sit above the confirm bar while previewing another day */
+.app--docked ~ .timer-dock {
+  bottom: var(--confirm-dock-h);
+}
+
+.timer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  padding: var(--space-3);
+  background: var(--color-bg);
+}
+
+.timer__head {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
+.timer__kind {
+  color: var(--color-accent-2);
+}
+
+.timer__name {
+  margin: 0;
+  font-size: var(--fs-small);
+  overflow-wrap: anywhere;
+}
+
+.timer__clock {
+  grid-row: 2 / 4;
+  grid-column: 2;
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.timer__controls {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.timer__controls .btn {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+}
+
+.timer--done .timer__clock {
+  color: var(--color-accent-2);
+}
+
+.timer--flash {
+  animation: timer-flash var(--motion-swap) steps(2, jump-none) 3;
+}
+
+@keyframes timer-flash {
+  50% {
+    background: var(--color-accent-2);
+    color: var(--color-fg-inverse);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timer--flash {
+    animation: none;
+    background: var(--color-accent-2);
+    color: var(--color-fg-inverse);
+  }
+}

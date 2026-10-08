@@ -201,3 +201,29 @@ describe('name actions (search video + copy)', () => {
     });
   });
 });
+
+describe('timer button', () => {
+  const timed = { ...baseItem, name: 'Plancha', setsReps: '3x 45 segundos', extra: [] };
+
+  it('is absent without an onTimer handler', () => {
+    expect(renderItem(timed).querySelector('button[aria-label^="Iniciar temporizador"]')).toBeNull();
+  });
+
+  it('starts the parsed timer for a mobility/stretch item', () => {
+    const onTimer = vi.fn();
+    const el = renderItem(timed, onTimer);
+    el.querySelector('button[aria-label="Iniciar temporizador de Plancha"]').click();
+    expect(onTimer).toHaveBeenCalledWith('Plancha', { kind: 'hold', seconds: 45, rounds: 3, sides: 1 });
+  });
+
+  it('is on exercises and supersets, using rest notes', () => {
+    const onTimer = vi.fn();
+    const item = { ...baseItem, group: 'A1', name: 'Remo', setsReps: '3x10', extra: ['Descanso de 90 segundos'] };
+    const single = renderExerciseGroup({ superset: false, items: [item] }, onTimer);
+    single.querySelector('button[aria-label="Iniciar temporizador de Remo"]').click();
+    expect(onTimer).toHaveBeenLastCalledWith('Remo', { kind: 'rest', seconds: 90, rounds: 1, sides: 1 });
+
+    const sup = renderExerciseGroup({ superset: true, letter: 'A', items: [item, { ...item, name: 'Press' }] }, onTimer);
+    expect(sup.querySelectorAll('button[aria-label^="Iniciar temporizador"]')).toHaveLength(2);
+  });
+});

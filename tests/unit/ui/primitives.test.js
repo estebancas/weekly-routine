@@ -225,3 +225,27 @@ describe('IconButton', () => {
     expect(() => IconButton({ icon: icon(), ariaLabel: 'x' }).click()).not.toThrow();
   });
 });
+
+describe('DockBar', () => {
+  it('wraps children in a docked panel with optional role and label', async () => {
+    const { DockBar } = await import('../../../src/ui/primitives/index.js');
+    const child = document.createElement('p');
+    const dock = DockBar({ children: [child], shadow: 'accent-2', className: 'x', panelClassName: 'y', role: 'timer', ariaLabel: 'T' });
+    expect(dock.tagName).toBe('SECTION');
+    expect(dock.className).toBe('dock x');
+    const bar = dock.querySelector('.dock__bar');
+    expect(bar.className).toContain('panel--shadow-accent-2');
+    expect(bar.classList.contains('y')).toBe(true);
+    expect(bar.getAttribute('role')).toBe('timer');
+    expect(bar.getAttribute('aria-label')).toBe('T');
+    expect(bar.contains(child)).toBe(true);
+  });
+
+  it('defaults to an accent shadow and no role', async () => {
+    const { DockBar } = await import('../../../src/ui/primitives/index.js');
+    const bar = DockBar().querySelector('.dock__bar');
+    expect(bar.className).toContain('panel--shadow-accent');
+    expect(bar.hasAttribute('role')).toBe(false);
+    expect(bar.hasAttribute('aria-label')).toBe(false);
+  });
+});

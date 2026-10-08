@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { icon } from '../../../src/ui/icons.js';
 
 describe('icon', () => {
-  it.each(['play', 'copy', 'check'])('renders a decorative %s svg', (name) => {
+  it.each(['play', 'copy', 'check', 'timer'])('renders a decorative %s svg', (name) => {
     const svg = icon(name);
     expect(svg.namespaceURI).toBe('http://www.w3.org/2000/svg');
     expect(svg.tagName.toLowerCase()).toBe('svg');

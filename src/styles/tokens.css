@@ -67,6 +67,7 @@
   /* Layout */
   --content-max: 560px;
   --tap-min: 44px;
+  --confirm-dock-h: 150px; /* approx. height of the docked confirm bar, for stacking the timer above it */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);

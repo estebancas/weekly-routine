@@ -352,3 +352,36 @@ describe('storage unavailable', () => {
     vi.doUnmock('idb');
   });
 });
+
+describe('workout timer', () => {
+  const startButtons = () => [...document.querySelectorAll('button[aria-label^="Iniciar temporizador"]')];
+
+  it('opens a docked bar from an item and keeps it across day previews and confirm', async () => {
+    await bootApp({ now: '2026-09-29T16:00:00Z' }); // Tue 10:00 CR
+    await toggleDetails(detailsList()[0]);
+    expect(startButtons().length).toBeGreaterThan(0);
+
+    startButtons()[0].click();
+    const dock = document.querySelector('.timer-dock');
+    expect(dock).toBeTruthy();
+    expect(app().classList.contains('app--timer')).toBe(true);
+    const name = dock.querySelector('.timer__name').textContent;
+
+    chip('MIÉ').click();
+    expect(isDocked()).toBe(true);
+    expect(document.querySelector('.timer-dock')).toBe(dock); // same node: not rebuilt
+    expect(dock.querySelector('.timer__name').textContent).toBe(name);
+
+    await confirmDay();
+    expect(document.querySelector('.timer-dock')).toBe(dock);
+
+    document.querySelector('button[aria-label="Cerrar temporizador"]').click();
+    expect(document.querySelector('.timer-dock')).toBeNull();
+    expect(app().classList.contains('app--timer')).toBe(false);
+  });
+
+  it('offers no timer on the weekend', async () => {
+    await bootApp({ now: '2026-10-03T16:00:00Z' }); // Sat
+    expect(startButtons()).toHaveLength(0);
+  });
+});

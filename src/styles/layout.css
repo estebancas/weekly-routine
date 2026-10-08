@@ -116,6 +116,14 @@
   padding-bottom: calc(var(--safe-bottom) + 190px);
 }
 
+.app--timer {
+  padding-bottom: calc(var(--safe-bottom) + 190px);
+}
+
+.app--docked.app--timer {
+  padding-bottom: calc(var(--safe-bottom) + 190px + var(--confirm-dock-h));
+}
+
 .confirm__question {
   font-family: var(--font-display);
   font-size: var(--fs-h2);
