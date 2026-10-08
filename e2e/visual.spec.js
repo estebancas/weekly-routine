@@ -37,6 +37,20 @@ test.describe('visual regression', () => {
       await screenshot(page, `preview-docked-${viewportName}.png`, viewport);
     });
 
+    // gotoAt freezes Date, so the countdown is static and the capture is deterministic.
+    test(`timer docked — ${viewportName}`, async ({ page }) => {
+      await gotoAt(page, '2026-09-29T16:00:00Z');
+      await page.getByRole('button', { name: /^Iniciar temporizador/ }).first().click();
+      await screenshot(page, `timer-docked-${viewportName}.png`, viewport);
+    });
+
+    test(`timer above preview bar — ${viewportName}`, async ({ page }) => {
+      await gotoAt(page, '2026-09-29T16:00:00Z');
+      await page.getByRole('button', { name: /^Iniciar temporizador/ }).first().click();
+      await dayChip(page, 'Jueves').click();
+      await screenshot(page, `timer-preview-${viewportName}.png`, viewport);
+    });
+
     test(`weekend — ${viewportName}`, async ({ page }) => {
       await gotoAt(page, '2026-10-03T18:00:00Z'); // Sat 12:00 CR
       await screenshot(page, `weekend-${viewportName}.png`, viewport);
