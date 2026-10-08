@@ -14,6 +14,9 @@
   line-height: 1;
   cursor: pointer;
   user-select: none;
+  transition:
+    transform var(--motion-press) var(--ease-hard),
+    box-shadow var(--motion-press) var(--ease-hard);
 }
 
 .btn--primary {

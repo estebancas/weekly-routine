@@ -233,6 +233,51 @@ describe('confirm flow', () => {
   });
 });
 
+describe('entrance animations (gated per render cause)', () => {
+  const hero = () => document.querySelector('.hero');
+  const sections = () => document.querySelector('.sections');
+  const dock = () => document.querySelector('.confirm-dock');
+  const hasSwap = (el) => el.classList.contains('anim-swap');
+
+  it('boot renders statically, with no swap animation', async () => {
+    await bootApp({ now: '2026-09-29T16:00:00Z' });
+    expect(hasSwap(hero())).toBe(false);
+    expect(hasSwap(sections())).toBe(false);
+  });
+
+  it('picking a day swaps the content in and slides the dock in', async () => {
+    await bootApp({ now: '2026-09-29T16:00:00Z' });
+    chip('JUE').click();
+    expect(hasSwap(hero())).toBe(true);
+    expect(hasSwap(sections())).toBe(true);
+    expect(dock().classList.contains('confirm-dock--enter')).toBe(true);
+  });
+
+  it('picking a second day while docked swaps the content but does not replay the dock slide', async () => {
+    await bootApp({ now: '2026-09-29T16:00:00Z' });
+    chip('JUE').click();
+    chip('VIE').click();
+    expect(hasSwap(sections())).toBe(true);
+    expect(dock().classList.contains('confirm-dock--enter')).toBe(false);
+  });
+
+  it('confirming re-renders without replaying the swap (preview did not move)', async () => {
+    await bootApp({ now: '2026-09-29T16:00:00Z' });
+    chip('JUE').click();
+    await confirmDay();
+    expect(hasSwap(hero())).toBe(false);
+    expect(hasSwap(sections())).toBe(false);
+  });
+
+  it('Volver swaps the selected day back in', async () => {
+    await bootApp({ now: '2026-09-29T16:00:00Z' });
+    chip('JUE').click();
+    confirmBar().querySelectorAll('button')[0].click(); // Volver
+    expect(hasSwap(sections())).toBe(true);
+    expect(dock()).toBeNull();
+  });
+});
+
 describe('open-section state (patch vs. set)', () => {
   it('toggling a section patches state without a full re-render (DOM node identity is kept)', async () => {
     await bootApp({ now: '2026-09-29T16:00:00Z' });
