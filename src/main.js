@@ -11,6 +11,7 @@ import { nowInZone } from './time.js';
 import { getRoutine } from './routine.js';
 import { getOverride, setOverride, clearOverride, requestPersistence } from './store.js';
 import { createState } from './state.js';
+import { motionPlan } from './motion.js';
 import { renderHero } from './ui/hero.js';
 import { renderDayStrip } from './ui/dayStrip.js';
 import { renderConfirmBar } from './ui/confirmBar.js';
@@ -38,10 +39,13 @@ async function boot() {
   });
 
   const root = document.getElementById('app');
+  let prevView = null; // previous render's view state, for motionPlan
 
   function render(s) {
     const routine = getRoutine(s.preview);
     const isPreview = s.preview !== s.selected;
+    const motion = motionPlan(prevView, { preview: s.preview, isPreview });
+    prevView = { preview: s.preview, isPreview };
 
     const nodes = [
       renderHero({
@@ -66,9 +70,14 @@ async function boot() {
       }),
     );
 
+    if (motion.swap) {
+      nodes[0].classList.add('anim-swap'); // hero
+      nodes[2].classList.add('anim-swap'); // sections
+    }
+
     if (isPreview) {
       const dock = document.createElement('div');
-      dock.className = 'confirm-dock';
+      dock.className = motion.dockEnter ? 'confirm-dock confirm-dock--enter' : 'confirm-dock';
       dock.append(
         renderConfirmBar({
           weekday: s.preview,
