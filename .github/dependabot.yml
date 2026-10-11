@@ -7,7 +7,7 @@ updates:
     # Let brand-new releases age a few days (yanks, hijacked publishes) before a PR opens.
     # Security updates are not delayed by this.
     cooldown:
-      default-days: 3
+      default-days: 7
     groups:
       npm-minor-patch:
         update-types:
@@ -41,7 +41,7 @@ updates:
     schedule:
       interval: weekly
     cooldown:
-      default-days: 3
+      default-days: 7
     groups:
       actions-minor-patch:
         update-types:
