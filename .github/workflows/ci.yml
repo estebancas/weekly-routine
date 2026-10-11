@@ -19,7 +19,7 @@ jobs:
   # docs/contract.md in that repo before renaming either.
   lint:
     name: Lint
-    uses: estebancas/standards/.github/workflows/lint.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
+    uses: estebancas/standards/.github/workflows/lint.yml@1e25189fccd69886eb0ade75da74dcc5c173a69b # v1
     with:
       # generate-icons is otherwise unexercised by CI, so a bad dev-tool bump (e.g. an ESM-only
       # major) would pass every other check. Regenerate and compare to the committed icons and
@@ -37,15 +37,15 @@ jobs:
 
   test:
     name: Unit tests + build
-    uses: estebancas/standards/.github/workflows/test-build.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
+    uses: estebancas/standards/.github/workflows/test-build.yml@1e25189fccd69886eb0ade75da74dcc5c173a69b # v1
 
   mutation:
     name: Mutation testing
-    uses: estebancas/standards/.github/workflows/mutation.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
+    uses: estebancas/standards/.github/workflows/mutation.yml@1e25189fccd69886eb0ade75da74dcc5c173a69b # v1
 
   audit:
     name: Dependency audit
-    uses: estebancas/standards/.github/workflows/audit.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
+    uses: estebancas/standards/.github/workflows/audit.yml@1e25189fccd69886eb0ade75da74dcc5c173a69b # v1
     with:
       # `braces` has no fix yet (see CLAUDE.md); drop this once the full audit is clean.
       audit-dev: true
@@ -53,12 +53,12 @@ jobs:
   size:
     name: Bundle size
     needs: test
-    uses: estebancas/standards/.github/workflows/size.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
+    uses: estebancas/standards/.github/workflows/size.yml@1e25189fccd69886eb0ade75da74dcc5c173a69b # v1
 
   e2e:
     name: End-to-end
     needs: test
-    uses: estebancas/standards/.github/workflows/e2e.yml@f98d9c425e9202e976b3df49d02e03a59bdda773 # v1
+    uses: estebancas/standards/.github/workflows/e2e.yml@1e25189fccd69886eb0ade75da74dcc5c173a69b # v1
     with:
       # Pinned to the installed @playwright/test version so the container's preinstalled
       # browsers and fonts match `npm ci`'s resolved version, and so visual regression
