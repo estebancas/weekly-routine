@@ -297,6 +297,38 @@ describe('open-section state (patch vs. set)', () => {
   });
 });
 
+describe('exercise name actions', () => {
+  it('copying a name hits the clipboard and keeps the open section node (no re-render)', async () => {
+    const writeText = vi.fn().mockResolvedValue();
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    await bootApp({ now: '2026-09-29T16:00:00Z' });
+    const exercises = detailsList()[1];
+    await toggleDetails(exercises);
+
+    const name = exercises.querySelector('.item__name').textContent;
+    const copy = exercises.querySelector('.item__actions button');
+    copy.click();
+    await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith(name));
+    await vi.waitFor(() => expect(copy.classList.contains('icon-btn--done')).toBe(true));
+
+    expect(document.querySelectorAll('details')[1]).toBe(exercises);
+    expect(exercises.open).toBe(true);
+    expect(copy.isConnected).toBe(true);
+  });
+
+  it('every named item links to a YouTube search for its own name', async () => {
+    await bootApp({ now: '2026-09-29T16:00:00Z' });
+    for (const d of detailsList()) await toggleDetails(d);
+    const rows = [...document.querySelectorAll('.item__title-row')];
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const href = new URL(row.querySelector('a').href);
+      expect(href.hostname).toBe('www.youtube.com');
+      expect(href.searchParams.get('search_query')).toBe(row.querySelector('.item__name').textContent);
+    }
+  });
+});
+
 describe('storage unavailable', () => {
   it('still boots on today and lets the user confirm a day in memory', async () => {
     globalThis.indexedDB = new IDBFactory();
@@ -318,5 +350,38 @@ describe('storage unavailable', () => {
     expect(heroTag()).toBe('Cambiado');
 
     vi.doUnmock('idb');
+  });
+});
+
+describe('workout timer', () => {
+  const startButtons = () => [...document.querySelectorAll('button[aria-label^="Iniciar temporizador"]')];
+
+  it('opens a docked bar from an item and keeps it across day previews and confirm', async () => {
+    await bootApp({ now: '2026-09-29T16:00:00Z' }); // Tue 10:00 CR
+    await toggleDetails(detailsList()[0]);
+    expect(startButtons().length).toBeGreaterThan(0);
+
+    startButtons()[0].click();
+    const dock = document.querySelector('.timer-dock');
+    expect(dock).toBeTruthy();
+    expect(app().classList.contains('app--timer')).toBe(true);
+    const name = dock.querySelector('.timer__name').textContent;
+
+    chip('MIÉ').click();
+    expect(isDocked()).toBe(true);
+    expect(document.querySelector('.timer-dock')).toBe(dock); // same node: not rebuilt
+    expect(dock.querySelector('.timer__name').textContent).toBe(name);
+
+    await confirmDay();
+    expect(document.querySelector('.timer-dock')).toBe(dock);
+
+    document.querySelector('button[aria-label="Cerrar temporizador"]').click();
+    expect(document.querySelector('.timer-dock')).toBeNull();
+    expect(app().classList.contains('app--timer')).toBe(false);
+  });
+
+  it('offers no timer on the weekend', async () => {
+    await bootApp({ now: '2026-10-03T16:00:00Z' }); // Sat
+    expect(startButtons()).toHaveLength(0);
   });
 });

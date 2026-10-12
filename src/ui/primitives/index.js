@@ -4,3 +4,5 @@ export { Tag } from './Tag.js';
 export { Panel } from './Panel.js';
 export { Details } from './Details.js';
 export { Input } from './Input.js';
+export { IconButton } from './IconButton.js';
+export { DockBar } from './DockBar.js';

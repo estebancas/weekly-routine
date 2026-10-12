@@ -1,0 +1,19 @@
+.dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  padding:
+    0
+    calc(var(--safe-right) + var(--space-4))
+    calc(var(--safe-bottom) + var(--space-4))
+    calc(var(--safe-left) + var(--space-4));
+  pointer-events: none;
+}
+
+.dock__bar {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  pointer-events: auto;
+}

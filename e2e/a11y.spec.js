@@ -23,6 +23,13 @@ test.describe('accessibility', () => {
     await expectNoViolations(page);
   });
 
+  test('with the timer bar open has no violations', async ({ page }) => {
+    await gotoAt(page, '2026-09-29T16:00:00Z');
+    await page.getByRole('button', { name: /^Iniciar temporizador/ }).first().click();
+    await expect(page.getByRole('timer', { name: 'Temporizador' })).toBeVisible();
+    await expectNoViolations(page);
+  });
+
   test('previewing another day, with the confirm bar docked, has no violations', async ({ page }) => {
     await gotoAt(page, '2026-09-29T16:00:00Z');
     await dayChip(page, 'Jueves').click();

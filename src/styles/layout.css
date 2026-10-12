@@ -116,6 +116,14 @@
   padding-bottom: calc(var(--safe-bottom) + 190px);
 }
 
+.app--timer {
+  padding-bottom: calc(var(--safe-bottom) + 190px);
+}
+
+.app--docked.app--timer {
+  padding-bottom: calc(var(--safe-bottom) + 190px + var(--confirm-dock-h));
+}
+
 .confirm__question {
   font-family: var(--font-display);
   font-size: var(--fs-h2);
@@ -152,6 +160,24 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+}
+
+.item__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.item__title-row .item__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.item__actions {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
 }
 
 .item__name {

@@ -16,6 +16,8 @@ import { renderHero } from './ui/hero.js';
 import { renderDayStrip } from './ui/dayStrip.js';
 import { renderConfirmBar } from './ui/confirmBar.js';
 import { renderSections } from './ui/sections.js';
+import { createTimerBar } from './ui/timerBar.js';
+import { createAlerts } from './timer/alerts.js';
 
 registerSW({ immediate: true });
 
@@ -39,6 +41,7 @@ async function boot() {
   });
 
   const root = document.getElementById('app');
+  const timerBar = createTimerBar({ app: root, alerts: createAlerts() });
   let prevView = null; // previous render's view state, for motionPlan
 
   function render(s) {
@@ -66,6 +69,7 @@ async function boot() {
       renderSections({
         routine,
         openSections: s.openSections,
+        onTimer: (name, config) => timerBar.start(name, config),
         onToggle: (key, open) => state.patch({ openSections: { ...state.get().openSections, [key]: open } }),
       }),
     );
