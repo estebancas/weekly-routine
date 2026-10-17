@@ -148,41 +148,58 @@ describe('createAlerts', () => {
       expect(AudioCtx).not.toHaveBeenCalled();
     });
 
-    it('claims a transient audio session for the beep and hands it back when it ends', async () => {
+    it('tears the element down when the beep ends so other audio can resume', async () => {
       let onEnded;
-      const el = { ...fakeEl(), addEventListener: (_, fn) => (onEnded = fn) };
-      const nav = { ...IOS, audioSession: { type: 'auto' } };
+      const el = {
+        ...fakeEl(),
+        removeAttribute: vi.fn(),
+        load: vi.fn(),
+        getAttribute: vi.fn(() => null),
+        addEventListener: (_, fn) => (onEnded = fn),
+      };
+      const nav = { ...IOS, audioSession: { type: 'playback' } };
       const alerts = createAlerts({ nav, makeAudio: () => el });
       alerts.unlock();
-      expect(nav.audioSession.type).toBe('transient');
       await Promise.resolve();
       await Promise.resolve();
-      expect(nav.audioSession.type).toBe('auto');
       alerts.alert();
-      expect(nav.audioSession.type).toBe('transient');
+      expect(el.src.startsWith('data:audio/wav')).toBe(true); // re-armed because src was removed
       onEnded();
+      expect(el.pause).toHaveBeenCalled();
+      expect(el.removeAttribute).toHaveBeenCalledWith('src');
+      expect(el.load).toHaveBeenCalled();
       expect(nav.audioSession.type).toBe('auto');
     });
 
-    it('hands the session back when playback is rejected, and tolerates a throwing setter', async () => {
-      const nav = { ...IOS, audioSession: { type: 'auto' } };
-      const alerts = createAlerts({ nav, makeAudio: () => fakeEl({ playOk: false }), onSilent: () => {} });
+    it('keeps the src when it is still set, and tolerates a failing teardown', async () => {
+      let onEnded;
+      const el = {
+        ...fakeEl(),
+        src: 'x',
+        getAttribute: () => 'x',
+        addEventListener: (_, fn) => (onEnded = fn),
+      };
+      const alerts = createAlerts({ nav: IOS, makeAudio: () => el });
+      alerts.unlock();
+      await Promise.resolve();
+      await Promise.resolve();
+      el.pause = vi.fn(() => {
+        throw new Error('gone');
+      });
+      alerts.alert();
+      expect(() => onEnded()).not.toThrow();
+    });
+
+    it('releases and reports when playback is rejected', async () => {
+      const onSilent = vi.fn();
+      const el = { ...fakeEl({ playOk: false }), removeAttribute: vi.fn() };
+      const alerts = createAlerts({ nav: IOS, makeAudio: () => el, onSilent });
       alerts.unlock();
       await new Promise((r) => setTimeout(r, 0));
       alerts.alert();
       await new Promise((r) => setTimeout(r, 0));
-      expect(nav.audioSession.type).toBe('auto');
-      const picky = {
-        ...IOS,
-        audioSession: {
-          set type(_) {
-            throw new TypeError('unsupported');
-          },
-        },
-      };
-      const a2 = createAlerts({ nav: picky, makeAudio: () => fakeEl() });
-      expect(() => a2.unlock()).not.toThrow();
-      expect(() => a2.alert()).not.toThrow();
+      expect(el.removeAttribute).toHaveBeenCalledWith('src');
+      expect(onSilent).toHaveBeenCalledTimes(1);
     });
 
     it('detects iPadOS (Mac user agent with touch)', () => {

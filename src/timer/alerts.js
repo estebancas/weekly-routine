@@ -71,21 +71,26 @@ export function createAlerts({
     }
   }
 
-  // 'transient' lets music keep playing (ducked at most); 'auto' hands the session back so it
-  // is not left claimed after the beep. Both are no-ops where the Audio Session API is missing.
-  function setSession(type) {
+  const beepSrc = useElement ? beepDataUri() : '';
+
+  // Tearing the element down after the beep makes WebKit drop its playback session, which is
+  // what lets other apps' music resume. 'auto' hands the Audio Session API back its default.
+  function release() {
     try {
-      if (nav?.audioSession) nav.audioSession.type = type;
+      el.pause();
+      el.removeAttribute?.('src');
+      el.load?.();
+      if (nav?.audioSession) nav.audioSession.type = 'auto';
     } catch {
-      /* unsupported type */
+      /* already released */
     }
   }
 
   function playElement() {
-    setSession('transient');
+    if (!el.getAttribute?.('src')) el.src = beepSrc;
     el.currentTime = 0;
     el.play().catch(() => {
-      setSession('auto');
+      release();
       silent();
     });
   }
@@ -97,22 +102,19 @@ export function createAlerts({
         if (useElement) {
           if (!el) {
             el = makeAudio();
-            el.src = beepDataUri();
+            el.src = beepSrc;
             el.preload = 'auto';
-            el.addEventListener?.('ended', () => setSession('auto'));
+            el.addEventListener?.('ended', release);
           }
           // Playing once inside the gesture authorises later programmatic plays.
           el.muted = true;
-          setSession('transient');
           el.play().then(
             () => {
               el.pause();
               el.muted = false;
-              setSession('auto');
             },
             () => {
               el.muted = false;
-              setSession('auto');
               silent();
             },
           );
