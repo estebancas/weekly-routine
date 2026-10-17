@@ -77,6 +77,10 @@ Which section opens by default is time-based: before `STRETCH_CUTOFF` (18:30 CR)
 
 `src/config.js` is the single place for the timezone, the stretch cutoff, day names/order, weekend definitions, section list, and all UI labels. Change behaviour or copy there rather than in components.
 
+### Timer alerts
+
+`src/timer/alerts.js` beeps, vibrates and holds the wake lock. `timerBar.js` fires the beep `BEEP_LEAD_MS` before each countdown boundary (a `setTimeout`, not the 250 ms tick) so it lands on zero; if the page was frozen and that timer never ran, the boundary event beeps instead. Android and desktop use an `OscillatorNode`. **iOS** (`detectPlatform`) plays the beep through an `<audio>` element built from a runtime WAV data URI, because the ringer switch mutes Web Audio but not `<audio>`; `unlock()` primes the element with a muted play inside the start tap. Known limitation: that element claims a playback session, so on iOS the first beep pauses the user's music and it does not resume on its own. No web API both ignores the silent switch and mixes with other audio (`navigator.audioSession` `transient` was tried: it mutes the beep and still pauses music), and the element is torn down after each beep as a best effort. A setting that switches iOS back to the Web Audio beep (mixes, but silent on silent mode) would be the next step if this matters.
+
 ### Exercise name actions
 
 Every item name (`renderNameRow` in `src/ui/items.js`) carries a search-video link and a copy button. `src/youtube.js` picks the link per platform: Android gets an `intent://` URL (opens the YouTube app, falls back to the web page), iOS a `youtube://` scheme launched from a click handler with a timed web fallback (`YOUTUBE_FALLBACK_MS`), everything else the plain web search. Copy feedback mutates the button directly (never `state.set()`).
