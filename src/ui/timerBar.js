@@ -1,5 +1,5 @@
 import './timerBar.css';
-import { LABELS, REST_STEP_S, TIMER_TICK_MS, TIMER_FLASH_MS } from '../config.js';
+import { LABELS, REST_STEP_S, TIMER_TICK_MS, TIMER_FLASH_MS, BEEP_LEAD_MS } from '../config.js';
 import { createEngine } from '../timer/engine.js';
 import { Button, DockBar } from './primitives/index.js';
 
@@ -29,6 +29,8 @@ export function formatClock(ms) {
 export function createTimerBar({ app, alerts, now = Date.now, mount = document.body }) {
   const engine = createEngine({ now });
   let timer = null;
+  let beepTimer = null;
+  let preBeeped = false; // the beep for the coming boundary already sounded
   let flashTimer = null;
   let bar = null;
   let refs = null;
@@ -109,12 +111,28 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
     flashTimer = setTimeout(() => refs?.panel.classList.remove('timer--flash'), TIMER_FLASH_MS);
   }
 
+  /** Sound the beep just before the boundary so it lands on zero rather than a tick later. */
+  function armBeep(snap) {
+    clearTimeout(beepTimer);
+    beepTimer = null;
+    if (snap.status !== 'running' || preBeeped) return;
+    beepTimer = setTimeout(
+      () => {
+        beepTimer = null;
+        preBeeped = true;
+        alerts.alert();
+      },
+      Math.max(0, snap.remainingMs - BEEP_LEAD_MS),
+    );
+  }
+
   function sync() {
     if (!bar) return;
     const events = engine.tick();
     const snap = render();
     if (events.length) {
-      alerts.alert();
+      if (preBeeped) preBeeped = false;
+      else alerts.alert();
       flash();
       if (events.includes('done')) refs.live.textContent = LABELS.timerDone;
       else if (events.includes('round-start')) {
@@ -122,6 +140,7 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
       }
     }
     if (snap.status !== 'running') stopLoop();
+    else if (events.length) armBeep(snap);
   }
 
   function startLoop() {
@@ -130,6 +149,9 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
   }
 
   function stopLoop() {
+    clearTimeout(beepTimer);
+    beepTimer = null;
+    preBeeped = false;
     clearInterval(timer);
     timer = null;
     alerts.releaseWakeLock();
@@ -138,6 +160,8 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
   function change(fn) {
     fn();
     const snap = render();
+    preBeeped = false;
+    armBeep(snap);
     if (snap.status === 'running') startLoop();
     else stopLoop();
   }

@@ -182,4 +182,39 @@ describe('createTimerBar', () => {
     bar.start('Otra', REST);
     expect(q('.timer__notice').hidden).toBe(true);
   });
+
+  it('beeps BEEP_LEAD_MS before zero, once, with no second beep at the boundary', () => {
+    bar.start('Plancha', REST);
+    advance(59);
+    expect(alerts.alert).not.toHaveBeenCalled();
+    t += 700;
+    vi.advanceTimersByTime(700); // 300 ms left
+    expect(alerts.alert).toHaveBeenCalledTimes(1);
+    t += 300;
+    vi.advanceTimersByTime(300);
+    expect(alerts.alert).toHaveBeenCalledTimes(1);
+    expect(q('.timer--done')).not.toBeNull();
+  });
+
+  it('beeps at the boundary if the early beep never fired (page was suspended)', () => {
+    bar.start('Plancha', REST);
+    t += 61_000; // JS was frozen: no timers ran
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(alerts.alert).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-arms the early beep for the next phase and after pause/resume', () => {
+    bar.start('Plancha', HOLD);
+    advance(10); // round-end
+    expect(alerts.alert).toHaveBeenCalledTimes(1);
+    advance(5); // gap ends
+    const gapBeeps = alerts.alert.mock.calls.length;
+    expect(gapBeeps).toBe(2);
+    [...document.querySelectorAll('.timer__controls button')].find((b) => b.textContent === 'Pausar').click();
+    advance(30);
+    expect(alerts.alert).toHaveBeenCalledTimes(gapBeeps);
+    [...document.querySelectorAll('.timer__controls button')].find((b) => b.textContent === 'Reanudar').click();
+    advance(10);
+    expect(alerts.alert).toHaveBeenCalledTimes(gapBeeps + 1);
+  });
 });

@@ -71,9 +71,23 @@ export function createAlerts({
     }
   }
 
+  // 'transient' lets music keep playing (ducked at most); 'auto' hands the session back so it
+  // is not left claimed after the beep. Both are no-ops where the Audio Session API is missing.
+  function setSession(type) {
+    try {
+      if (nav?.audioSession) nav.audioSession.type = type;
+    } catch {
+      /* unsupported type */
+    }
+  }
+
   function playElement() {
+    setSession('transient');
     el.currentTime = 0;
-    el.play().catch(silent);
+    el.play().catch(() => {
+      setSession('auto');
+      silent();
+    });
   }
 
   return {
@@ -85,16 +99,20 @@ export function createAlerts({
             el = makeAudio();
             el.src = beepDataUri();
             el.preload = 'auto';
+            el.addEventListener?.('ended', () => setSession('auto'));
           }
           // Playing once inside the gesture authorises later programmatic plays.
           el.muted = true;
+          setSession('transient');
           el.play().then(
             () => {
               el.pause();
               el.muted = false;
+              setSession('auto');
             },
             () => {
               el.muted = false;
+              setSession('auto');
               silent();
             },
           );

@@ -70,5 +70,7 @@ export const REST_STEP_S = 15;
 export const ROUND_GAP_S = 5;
 /** How often the running bar re-reads the clock (the value itself comes from Date.now deltas). */
 export const TIMER_TICK_MS = 250;
+/** Start the beep this long before a countdown reaches zero, to cover tick and audio start latency. */
+export const BEEP_LEAD_MS = 300;
 /** How long the bar flashes acid green when a countdown hits zero. */
 export const TIMER_FLASH_MS = 1200;

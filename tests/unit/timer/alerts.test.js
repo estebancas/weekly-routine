@@ -148,6 +148,43 @@ describe('createAlerts', () => {
       expect(AudioCtx).not.toHaveBeenCalled();
     });
 
+    it('claims a transient audio session for the beep and hands it back when it ends', async () => {
+      let onEnded;
+      const el = { ...fakeEl(), addEventListener: (_, fn) => (onEnded = fn) };
+      const nav = { ...IOS, audioSession: { type: 'auto' } };
+      const alerts = createAlerts({ nav, makeAudio: () => el });
+      alerts.unlock();
+      expect(nav.audioSession.type).toBe('transient');
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(nav.audioSession.type).toBe('auto');
+      alerts.alert();
+      expect(nav.audioSession.type).toBe('transient');
+      onEnded();
+      expect(nav.audioSession.type).toBe('auto');
+    });
+
+    it('hands the session back when playback is rejected, and tolerates a throwing setter', async () => {
+      const nav = { ...IOS, audioSession: { type: 'auto' } };
+      const alerts = createAlerts({ nav, makeAudio: () => fakeEl({ playOk: false }), onSilent: () => {} });
+      alerts.unlock();
+      await new Promise((r) => setTimeout(r, 0));
+      alerts.alert();
+      await new Promise((r) => setTimeout(r, 0));
+      expect(nav.audioSession.type).toBe('auto');
+      const picky = {
+        ...IOS,
+        audioSession: {
+          set type(_) {
+            throw new TypeError('unsupported');
+          },
+        },
+      };
+      const a2 = createAlerts({ nav: picky, makeAudio: () => fakeEl() });
+      expect(() => a2.unlock()).not.toThrow();
+      expect(() => a2.alert()).not.toThrow();
+    });
+
     it('detects iPadOS (Mac user agent with touch)', () => {
       const el = fakeEl();
       const alerts = createAlerts({
