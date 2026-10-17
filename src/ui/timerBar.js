@@ -40,6 +40,9 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
     const head = el('div', 'timer__head');
     head.append(kind, round);
     const clock = el('div', 'timer__clock');
+    const notice = el('p', 'timer__notice');
+    notice.hidden = true;
+    notice.setAttribute('role', 'status');
     const live = el('div', 'u-sr-only');
     live.setAttribute('aria-live', 'polite');
 
@@ -81,10 +84,10 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
       panelClassName: 'timer',
       role: 'timer',
       ariaLabel: LABELS.timerRegion,
-      children: [head, name, clock, controls, live],
+      children: [head, name, clock, controls, notice, live],
     });
     const panel = bar.firstElementChild;
-    refs = { panel, name, kind, round, clock, live, toggle };
+    refs = { panel, name, kind, round, clock, live, notice, toggle };
     mount.append(bar);
   }
 
@@ -146,6 +149,7 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible' || !bar) return;
+    alerts.resume?.();
     sync();
     if (engine.snapshot().status === 'running') alerts.acquireWakeLock();
   });
@@ -157,8 +161,15 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
       if (!bar) build();
       refs.name.textContent = name;
       refs.live.textContent = '';
+      refs.notice.hidden = true;
       app.classList.add('app--timer');
       change(() => engine.start(config));
+    },
+    /** Non-blocking message under the controls (e.g. the beep could not play). */
+    notify(text) {
+      if (!refs) return;
+      refs.notice.textContent = text;
+      refs.notice.hidden = false;
     },
     close() {
       if (!bar) return;

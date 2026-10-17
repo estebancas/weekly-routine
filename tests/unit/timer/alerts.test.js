@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createAlerts } from '../../../src/timer/alerts.js';
+import { createAlerts, beepDataUri } from '../../../src/timer/alerts.js';
 
 function fakeAudio() {
   const osc = { frequency: {}, connect: vi.fn(), start: vi.fn(), stop: vi.fn() };
@@ -78,6 +78,126 @@ describe('createAlerts', () => {
     expect(() => createAlerts({ nav: {}, AudioCtx: vi.fn(function () {
       return {};
     }) }).unlock()).not.toThrow();
+  });
+
+  it('resumes a suspended context before beeping and on resume()', () => {
+    const { ctx, osc, AudioCtx } = fakeAudio();
+    ctx.state = 'suspended';
+    const alerts = createAlerts({ nav: {}, AudioCtx });
+    alerts.unlock();
+    ctx.resume.mockClear();
+    alerts.alert();
+    expect(ctx.resume).toHaveBeenCalledTimes(1);
+    expect(osc.start).toHaveBeenCalled();
+    alerts.resume();
+    expect(ctx.resume).toHaveBeenCalledTimes(2);
+    ctx.state = 'running';
+    alerts.resume();
+    expect(ctx.resume).toHaveBeenCalledTimes(2);
+    expect(() => createAlerts({ nav: {}, AudioCtx }).resume()).not.toThrow();
+  });
+
+  it('reports silence once when the oscillator path throws', () => {
+    const { ctx, AudioCtx } = fakeAudio();
+    ctx.createOscillator.mockImplementation(() => {
+      throw new Error('closed');
+    });
+    const onSilent = vi.fn();
+    const alerts = createAlerts({ nav: {}, AudioCtx, onSilent });
+    alerts.unlock();
+    alerts.alert();
+    alerts.alert();
+    expect(onSilent).toHaveBeenCalledTimes(1);
+  });
+
+  it('encodes the beep as a WAV data URI', () => {
+    const uri = beepDataUri();
+    expect(uri.startsWith('data:audio/wav;base64,')).toBe(true);
+    const bin = atob(uri.split(',')[1]);
+    expect(bin.slice(0, 4)).toBe('RIFF');
+    expect(bin.slice(8, 12)).toBe('WAVE');
+    expect(bin.length).toBe(44 + 2000 * 2);
+  });
+
+  describe('iOS (<audio> path)', () => {
+    const IOS = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)' };
+    function fakeEl({ playOk = true } = {}) {
+      const e = {
+        play: vi.fn(() => (playOk ? Promise.resolve() : Promise.reject(new Error('NotAllowed')))),
+        pause: vi.fn(),
+        currentTime: 5,
+      };
+      return e;
+    }
+
+    it('primes the element on unlock and plays it for alerts, not the oscillator', async () => {
+      const el = fakeEl();
+      const { osc, AudioCtx } = fakeAudio();
+      const alerts = createAlerts({ nav: { ...IOS, vibrate: vi.fn() }, AudioCtx, makeAudio: () => el });
+      alerts.unlock();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(el.src.startsWith('data:audio/wav')).toBe(true);
+      expect(el.pause).toHaveBeenCalled();
+      expect(el.muted).toBe(false);
+      el.play.mockClear();
+      alerts.alert();
+      expect(el.currentTime).toBe(0);
+      expect(el.play).toHaveBeenCalledTimes(1);
+      expect(osc.start).not.toHaveBeenCalled();
+      expect(AudioCtx).not.toHaveBeenCalled();
+    });
+
+    it('detects iPadOS (Mac user agent with touch)', () => {
+      const el = fakeEl();
+      const alerts = createAlerts({
+        nav: { userAgent: 'Macintosh; Intel Mac OS X', maxTouchPoints: 5 },
+        makeAudio: () => el,
+      });
+      alerts.unlock();
+      expect(el.play).toHaveBeenCalled();
+    });
+
+    it('does nothing before unlock', () => {
+      const makeAudio = vi.fn();
+      const alerts = createAlerts({ nav: IOS, makeAudio });
+      expect(() => alerts.alert()).not.toThrow();
+      expect(makeAudio).not.toHaveBeenCalled();
+    });
+
+    it('tells the user once when playback is rejected', async () => {
+      const onSilent = vi.fn();
+      const el = fakeEl({ playOk: false });
+      const alerts = createAlerts({ nav: IOS, makeAudio: () => el, onSilent });
+      alerts.unlock();
+      await new Promise((r) => setTimeout(r, 0));
+      alerts.alert();
+      await new Promise((r) => setTimeout(r, 0));
+      expect(onSilent).toHaveBeenCalledTimes(1);
+      expect(el.muted).toBe(false);
+    });
+
+    it('reports silence when the element cannot be created', () => {
+      const onSilent = vi.fn();
+      const alerts = createAlerts({
+        nav: IOS,
+        makeAudio: () => {
+          throw new Error('no audio');
+        },
+        onSilent,
+      });
+      expect(() => alerts.unlock()).not.toThrow();
+      expect(onSilent).toHaveBeenCalledTimes(1);
+      expect(() => alerts.alert()).not.toThrow();
+    });
+
+    it('reuses one element across unlocks', () => {
+      const makeAudio = vi.fn(() => fakeEl());
+      const alerts = createAlerts({ nav: IOS, makeAudio });
+      alerts.unlock();
+      alerts.unlock();
+      expect(makeAudio).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('wake lock', () => {

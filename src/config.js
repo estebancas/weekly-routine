@@ -53,6 +53,7 @@ export const LABELS = {
   timerMinus: (s) => `Restar ${s} segundos`,
   timerPlus: (s) => `Sumar ${s} segundos`,
   timerDone: 'Tiempo',
+  timerSilent: 'No se pudo reproducir el sonido. Revisa el volumen del teléfono.',
   timerAnnounceRound: (round, rounds, side, sides) =>
     `Serie ${round} de ${rounds}${sides > 1 ? `, lado ${side} de ${sides}` : ''}`,
 };

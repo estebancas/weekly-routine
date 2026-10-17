@@ -25,6 +25,7 @@ beforeEach(() => {
     alert: vi.fn(),
     acquireWakeLock: vi.fn(),
     releaseWakeLock: vi.fn(),
+    resume: vi.fn(),
   };
   bar = createTimerBar({ app, alerts, now: () => t });
 });
@@ -162,5 +163,23 @@ describe('createTimerBar', () => {
     document.dispatchEvent(new Event('visibilitychange'));
     expect(q('.timer--done')).not.toBeNull();
     expect(alerts.acquireWakeLock).toHaveBeenCalledTimes(1);
+  });
+
+  it('resumes audio when the page becomes visible again', () => {
+    bar.start('Plancha', REST);
+    alerts.resume.mockClear();
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(alerts.resume).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows a non-blocking notice, hidden again after close and restart', () => {
+    expect(() => bar.notify('x')).not.toThrow();
+    bar.start('Plancha', REST);
+    expect(q('.timer__notice').hidden).toBe(true);
+    bar.notify('Sin sonido');
+    expect(q('.timer__notice').textContent).toBe('Sin sonido');
+    expect(q('.timer__notice').hidden).toBe(false);
+    bar.start('Otra', REST);
+    expect(q('.timer__notice').hidden).toBe(true);
   });
 });
