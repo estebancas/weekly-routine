@@ -6,7 +6,7 @@ import './styles/base.css';
 import './styles/layout.css';
 
 import { registerSW } from 'virtual:pwa-register';
-import { STRETCH_CUTOFF_MINUTES } from './config.js';
+import { LABELS, STRETCH_CUTOFF_MINUTES } from './config.js';
 import { nowInZone } from './time.js';
 import { getRoutine } from './routine.js';
 import { getOverride, setOverride, clearOverride, requestPersistence } from './store.js';
@@ -41,7 +41,8 @@ async function boot() {
   });
 
   const root = document.getElementById('app');
-  const timerBar = createTimerBar({ app: root, alerts: createAlerts() });
+  const alerts = createAlerts({ onSilent: () => timerBar.notify(LABELS.timerSilent) });
+  const timerBar = createTimerBar({ app: root, alerts });
   let prevView = null; // previous render's view state, for motionPlan
 
   function render(s) {

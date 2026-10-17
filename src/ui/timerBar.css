@@ -80,3 +80,9 @@
     color: var(--color-fg-inverse);
   }
 }
+
+.timer__notice {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--color-accent);
+}

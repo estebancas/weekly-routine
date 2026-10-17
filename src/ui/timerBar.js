@@ -1,5 +1,5 @@
 import './timerBar.css';
-import { LABELS, REST_STEP_S, TIMER_TICK_MS, TIMER_FLASH_MS } from '../config.js';
+import { LABELS, REST_STEP_S, TIMER_TICK_MS, TIMER_FLASH_MS, BEEP_LEAD_MS } from '../config.js';
 import { createEngine } from '../timer/engine.js';
 import { Button, DockBar } from './primitives/index.js';
 
@@ -29,6 +29,8 @@ export function formatClock(ms) {
 export function createTimerBar({ app, alerts, now = Date.now, mount = document.body }) {
   const engine = createEngine({ now });
   let timer = null;
+  let beepTimer = null;
+  let preBeeped = false; // the beep for the coming boundary already sounded
   let flashTimer = null;
   let bar = null;
   let refs = null;
@@ -40,6 +42,9 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
     const head = el('div', 'timer__head');
     head.append(kind, round);
     const clock = el('div', 'timer__clock');
+    const notice = el('p', 'timer__notice');
+    notice.hidden = true;
+    notice.setAttribute('role', 'status');
     const live = el('div', 'u-sr-only');
     live.setAttribute('aria-live', 'polite');
 
@@ -81,10 +86,10 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
       panelClassName: 'timer',
       role: 'timer',
       ariaLabel: LABELS.timerRegion,
-      children: [head, name, clock, controls, live],
+      children: [head, name, clock, controls, notice, live],
     });
     const panel = bar.firstElementChild;
-    refs = { panel, name, kind, round, clock, live, toggle };
+    refs = { panel, name, kind, round, clock, live, notice, toggle };
     mount.append(bar);
   }
 
@@ -106,12 +111,28 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
     flashTimer = setTimeout(() => refs?.panel.classList.remove('timer--flash'), TIMER_FLASH_MS);
   }
 
+  /** Sound the beep just before the boundary so it lands on zero rather than a tick later. */
+  function armBeep(snap) {
+    clearTimeout(beepTimer);
+    beepTimer = null;
+    if (snap.status !== 'running' || preBeeped) return;
+    beepTimer = setTimeout(
+      () => {
+        beepTimer = null;
+        preBeeped = true;
+        alerts.alert();
+      },
+      Math.max(0, snap.remainingMs - BEEP_LEAD_MS),
+    );
+  }
+
   function sync() {
     if (!bar) return;
     const events = engine.tick();
     const snap = render();
     if (events.length) {
-      alerts.alert();
+      if (preBeeped) preBeeped = false;
+      else alerts.alert();
       flash();
       if (events.includes('done')) refs.live.textContent = LABELS.timerDone;
       else if (events.includes('round-start')) {
@@ -119,6 +140,7 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
       }
     }
     if (snap.status !== 'running') stopLoop();
+    else if (events.length) armBeep(snap);
   }
 
   function startLoop() {
@@ -127,6 +149,9 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
   }
 
   function stopLoop() {
+    clearTimeout(beepTimer);
+    beepTimer = null;
+    preBeeped = false;
     clearInterval(timer);
     timer = null;
     alerts.releaseWakeLock();
@@ -135,6 +160,8 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
   function change(fn) {
     fn();
     const snap = render();
+    preBeeped = false;
+    armBeep(snap);
     if (snap.status === 'running') startLoop();
     else stopLoop();
   }
@@ -146,6 +173,7 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible' || !bar) return;
+    alerts.resume?.();
     sync();
     if (engine.snapshot().status === 'running') alerts.acquireWakeLock();
   });
@@ -157,8 +185,15 @@ export function createTimerBar({ app, alerts, now = Date.now, mount = document.b
       if (!bar) build();
       refs.name.textContent = name;
       refs.live.textContent = '';
+      refs.notice.hidden = true;
       app.classList.add('app--timer');
       change(() => engine.start(config));
+    },
+    /** Non-blocking message under the controls (e.g. the beep could not play). */
+    notify(text) {
+      if (!refs) return;
+      refs.notice.textContent = text;
+      refs.notice.hidden = false;
     },
     close() {
       if (!bar) return;
