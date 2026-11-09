@@ -47,7 +47,7 @@ jobs:
     name: Dependency audit
     uses: estebancas/standards/.github/workflows/audit.yml@80c0b1adb869098f8144668e5bab556130149a2a # v1.1.0
     with:
-      # `braces` has no fix yet (see CLAUDE.md); drop this once the full audit is clean.
+      # Dev-only findings (see CLAUDE.md) still show up as a non-blocking warning; drop this once the full audit is clean.
       audit-dev: true
 
   size:
@@ -63,7 +63,7 @@ jobs:
       # Pinned to the installed @playwright/test version so the container's preinstalled
       # browsers and fonts match `npm ci`'s resolved version, and so visual regression
       # baselines (committed from the same image, see CLAUDE.md) render identically.
-      container-image: mcr.microsoft.com/playwright:v1.63.0-noble
+      container-image: mcr.microsoft.com/playwright:v1.64.1-noble
 
   deploy:
     name: Deploy to Cloudflare

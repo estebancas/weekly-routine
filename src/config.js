@@ -35,7 +35,7 @@ export const LABELS = {
   confirm: 'Confirmar',
   back: 'Volver',
   superset: 'Superserie',
-  pickDay: (dayName) => `Ver rutina de ${dayName}`,
+  pickDay: (dayName, short) => `${short}, Ver rutina de ${dayName}`,
   searchVideo: (name) => `Buscar video de ${name}`,
   copyName: (name) => `Copiar nombre de ${name}`,
   copied: 'Copiado',

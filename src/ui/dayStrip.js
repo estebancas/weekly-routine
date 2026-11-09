@@ -20,7 +20,7 @@ export function renderDayStrip({ today, selected, preview, onPick }) {
         selected: wd === selected,
         preview: wd === preview && preview !== selected,
         marker: wd === today,
-        ariaLabel: LABELS.pickDay(DAY_NAMES[wd]),
+        ariaLabel: LABELS.pickDay(DAY_NAMES[wd], DAY_SHORT[wd]),
         onClick: () => onPick(wd),
       }),
     );

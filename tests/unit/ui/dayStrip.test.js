@@ -14,7 +14,15 @@ describe('renderDayStrip', () => {
   it('sets an aria-label per chip using the full day name', () => {
     const el = renderDayStrip({ today: 1, selected: 1, preview: 1, onPick: () => {} });
     const lun = el.querySelector('.chip');
-    expect(lun.getAttribute('aria-label')).toBe('Ver rutina de Lunes');
+    expect(lun.getAttribute('aria-label')).toBe('LUN, Ver rutina de Lunes');
+  });
+
+  it('includes each chip\'s visible text in its aria-label (WCAG 2.5.3)', () => {
+    const el = renderDayStrip({ today: 1, selected: 1, preview: 1, onPick: () => {} });
+    for (const chip of el.querySelectorAll('.chip')) {
+      const visible = chip.querySelector('.chip__label').textContent;
+      expect(chip.getAttribute('aria-label')).toContain(visible);
+    }
   });
 
   it('marks exactly the selected chip as pressed', () => {
